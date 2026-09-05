@@ -42,30 +42,24 @@ const App = () => (
                 </Layout>
               } 
             />
+            {/* Founder Routes */}
             <Route 
               path="/complete-profile" 
               element={
                 <Layout>
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredRole="founder">
                     <CompleteProfile />
                   </ProtectedRoute>
                 </Layout>
               } 
             />
+            {/* Investor Routes */}
             <Route 
               path="/upload" 
               element={
                 <Layout>
-                  <Upload />
-                </Layout>
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                <Layout>
-                  <ProtectedRoute requireProfile>
-                    <Dashboard />
+                  <ProtectedRoute requiredRole="investor">
+                    <Upload />
                   </ProtectedRoute>
                 </Layout>
               } 
@@ -74,8 +68,38 @@ const App = () => (
               path="/analysis" 
               element={
                 <Layout>
-                  <ProtectedRoute requireProfile>
+                  <ProtectedRoute requiredRole="investor">
                     <AnalysisResults />
+                  </ProtectedRoute>
+                </Layout>
+              } 
+            />
+            <Route 
+              path="/analysis-dashboard" 
+              element={
+                <Layout>
+                  <ProtectedRoute requiredRole="investor">
+                    <AnalysisDashboard />
+                  </ProtectedRoute>
+                </Layout>
+              } 
+            />
+            <Route 
+              path="/analysis-dashboard/:analysisId" 
+              element={
+                <Layout>
+                  <ProtectedRoute requiredRole="investor">
+                    <AnalysisDashboard />
+                  </ProtectedRoute>
+                </Layout>
+              } 
+            />
+            <Route 
+              path="/dashboard" 
+              element={
+                <Layout>
+                  <ProtectedRoute requiredRole="founder">
+                    <Dashboard />
                   </ProtectedRoute>
                 </Layout>
               } 

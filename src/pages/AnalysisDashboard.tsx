@@ -1,14 +1,217 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, AlertTriangle, CheckCircle2, TrendingUp, Users, Target } from "lucide-react";
+import { Download, AlertTriangle, CheckCircle2, TrendingUp, Users, Target, ArrowLeft, Loader2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface AnalysisData {
+  id: string;
+  startup_name: string;
+  executive_summary: string;
+  overall_score: number;
+  financial_health_score: number;
+  growth_potential_score: number;
+  risk_assessment_score: number;
+  current_revenue: number;
+  monthly_burn: number;
+  runway_months: number;
+  team_size: number;
+  funding_ask: number;
+  funding_probability_score: number;
+  business_overview: any;
+  funding_details: any;
+  market_analysis: any;
+  slide_insights: any;
+  red_flags: any;
+  investment_recommendation: string;
+}
 
 const AnalysisDashboard = () => {
+  const { analysisId } = useParams<{ analysisId: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    if (!analysisId || analysisId.startsWith('default-demo')) {
+      // Load default data for demo purposes
+      loadDefaultAnalysisData();
+    } else {
+      fetchAnalysisData();
+    }
+  }, [user, analysisId, navigate]);
+
+  const loadDefaultAnalysisData = () => {
+    // Try to get from session storage first
+    const sessionData = sessionStorage.getItem('latest_analysis');
+    if (sessionData) {
+      const data = JSON.parse(sessionData);
+      if (data.analysis_results) {
+        setAnalysis(data.analysis_results);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // If no session data, create default data based on analysisId
+    const defaultData = getDefaultDataById(analysisId);
+    setAnalysis(defaultData);
+    setLoading(false);
+  };
+
+  const getDefaultDataById = (id: string) => {
+    const baseData = {
+      id: id || 'default-demo',
+      startup_name: 'TechStartup Inc. (Demo)',
+      executive_summary: 'This is demo data to showcase the investor analysis dashboard. TechStartup Inc. is a B2B SaaS platform addressing workflow automation for mid-market enterprises.',
+      overall_score: 82,
+      financial_health_score: 75,
+      growth_potential_score: 88,
+      risk_assessment_score: 79,
+      current_revenue: 200000,
+      monthly_burn: 15000,
+      runway_months: 18,
+      team_size: 8,
+      funding_ask: 2000000,
+      funding_probability_score: 68,
+      business_overview: {
+        company: 'TechStartup Inc.',
+        industry: 'fintech',
+        stage: 'seed',
+        founded: 2023,
+        description: 'B2B SaaS workflow automation platform'
+      },
+      funding_details: {
+        funding_ask: 2000000,
+        use_of_funds: 'Product development, team expansion, and market penetration',
+        funding_probability: 68,
+        runway_extension: 24,
+        previous_funding: 500000
+      },
+      market_analysis: {
+        tam: 12000000000,
+        sam: 1200000000,
+        som: 120000000,
+        growth_rate: 23,
+        market_maturity: 'growing',
+        competitive_landscape: 'moderate competition with clear differentiation opportunities'
+      },
+      investment_recommendation: 'Strong investment opportunity with solid fundamentals. The team has relevant experience and the market timing is favorable. Recommend proceeding with due diligence.',
+      slide_insights: {
+        problemSolution: 'Well-articulated problem with compelling solution',
+        marketSize: 'Large addressable market with clear growth trajectory',
+        businessModel: 'Recurring revenue model with good unit economics'
+      },
+      red_flags: {
+        competition: 'Several established players in the market',
+        execution: 'Limited go-to-market experience in the team'
+      }
+    };
+
+    // Customize data based on different demo IDs
+    if (id === 'default-demo-2') {
+      return {
+        ...baseData,
+        id: 'default-demo-2',
+        startup_name: 'FinanceFlow AI (Demo)',
+        overall_score: 75,
+        financial_health_score: 70,
+        growth_potential_score: 80,
+        risk_assessment_score: 75,
+        current_revenue: 150000,
+        monthly_burn: 12000,
+        executive_summary: 'FinanceFlow AI is disrupting financial planning with AI-powered insights for SMBs.',
+        business_overview: {
+          ...baseData.business_overview,
+          company: 'FinanceFlow AI',
+          industry: 'fintech',
+          stage: 'pre-seed'
+        }
+      };
+    }
+
+    if (id === 'default-demo-3') {
+      return {
+        ...baseData,
+        id: 'default-demo-3',
+        startup_name: 'GreenTech Solutions (Demo)',
+        overall_score: 68,
+        financial_health_score: 65,
+        growth_potential_score: 72,
+        risk_assessment_score: 68,
+        current_revenue: 100000,
+        monthly_burn: 8000,
+        executive_summary: 'GreenTech Solutions provides sustainable energy solutions for residential markets.',
+        business_overview: {
+          ...baseData.business_overview,
+          company: 'GreenTech Solutions',
+          industry: 'cleantech',
+          stage: 'pre-seed'
+        }
+      };
+    }
+
+    return baseData;
+  };
+
+  const fetchAnalysisData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("analysis_results")
+        .select("*")
+        .eq("id", analysisId)
+        .eq("user_id", user!.id)
+        .single();
+
+      if (error) throw error;
+      setAnalysis(data);
+    } catch (error) {
+      console.error("Error fetching analysis:", error);
+      toast.error("Failed to load analysis results");
+      navigate("/analysis");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleExport = (format: string) => {
     toast.success(`Exporting as ${format.toUpperCase()}...`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!analysis) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <Card className="p-8 max-w-md text-center">
+          <h2 className="text-2xl font-bold mb-4">Analysis Not Found</h2>
+          <p className="text-muted-foreground mb-6">
+            The requested analysis could not be found.
+          </p>
+          <Button onClick={() => navigate("/analysis")}>
+            Back to Analysis History
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   const redFlags = [
     {
@@ -57,153 +260,401 @@ const AnalysisDashboard = () => {
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-                Analysis Dashboard
-              </h1>
-              <p className="text-muted-foreground">AI-Generated Insights for Your Pitch Deck</p>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" onClick={() => navigate("/analysis")}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    {analysis.startup_name || 'Startup Analysis'}
+                  </h1>
+                  {(analysisId?.startsWith('default-demo') || sessionStorage.getItem('is_default_data') === 'true') && (
+                    <Badge variant="outline" className="text-xs">
+                      Demo Data
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-muted-foreground">Investment Analysis Dashboard</p>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button onClick={() => handleExport("pdf")} variant="secondary">
                 <Download className="mr-2 h-4 w-4" />
                 Export PDF
               </Button>
-              <Button onClick={() => handleExport("ppt")} className="bg-gradient-primary">
-                <Download className="mr-2 h-4 w-4" />
-                Export PPT
-              </Button>
+              <div className="flex gap-2">
+                {(analysisId?.startsWith('default-demo') || sessionStorage.getItem('is_default_data') === 'true') && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      sessionStorage.removeItem('is_default_data');
+                      sessionStorage.removeItem('latest_analysis');
+                      navigate("/upload");
+                    }}
+                  >
+                    Try Real Analysis
+                  </Button>
+                )}
+                <Button onClick={() => navigate("/upload")} className="bg-gradient-primary">
+                  New Analysis
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Executive Summary */}
-        <Card className="mb-8 bg-card border-border animate-slide-up">
-          <CardHeader>
-            <CardTitle className="text-2xl">Executive Summary</CardTitle>
-            <CardDescription>One-page investor memo</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="prose prose-invert max-w-none">
-              <p className="text-foreground/90 leading-relaxed">
-                <strong className="text-primary">TechStartup Inc.</strong> is a B2B SaaS platform addressing workflow automation 
-                for mid-market enterprises. The company demonstrates strong product-market fit with 15 design partners 
-                and $200K ARR in early traction.
-              </p>
-              <p className="text-foreground/90 leading-relaxed">
-                The founding team brings 20+ years of combined experience from Google and McKinsey. Target market 
-                shows $12B TAM with 23% CAGR. Revenue model is subscription-based with clear path to $10M ARR in 36 months.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 not-prose">
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Overall Score</div>
-                  <div className="text-3xl font-bold text-success">8.2/10</div>
-                </div>
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Investment Readiness</div>
-                  <div className="text-3xl font-bold text-primary">High</div>
-                </div>
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Red Flags</div>
-                  <div className="text-3xl font-bold text-warning">3</div>
+        {/* Score Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Overall Score</h3>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {analysis.overall_score || 0}/100
+              </div>
+              <p className="text-sm text-muted-foreground">Investment readiness</p>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Financial Health</h3>
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                {analysis.financial_health_score || 0}/100
+              </div>
+              <p className="text-sm text-muted-foreground">Revenue & burn rate</p>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Growth Potential</h3>
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {analysis.growth_potential_score || 0}/100
+              </div>
+              <p className="text-sm text-muted-foreground">Market opportunity</p>
+            </div>
+          </Card>
+          
+          <Card className="p-6 bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Risk Assessment</h3>
+              <div className="text-4xl font-bold text-orange-600 mb-2">
+                {analysis.risk_assessment_score || 0}/100
+              </div>
+              <p className="text-sm text-muted-foreground">Risk mitigation</p>
+            </div>
+          </Card>
+        </div>
+
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <DollarSign className="w-8 h-8 text-green-500" />
+              <div>
+                <h3 className="font-semibold">Current Revenue</h3>
+                <div className="text-2xl font-bold">
+                  ${analysis.current_revenue ? (analysis.current_revenue / 1000).toFixed(0) + 'K' : '0'}
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-sm text-muted-foreground">Annual recurring revenue</p>
+          </Card>
+          
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <TrendingUp className="w-8 h-8 text-red-500" />
+              <div>
+                <h3 className="font-semibold">Monthly Burn</h3>
+                <div className="text-2xl font-bold">
+                  ${analysis.monthly_burn ? (analysis.monthly_burn / 1000).toFixed(0) + 'K' : '0'}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">Operating expenses</p>
+          </Card>
+          
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <CheckCircle2 className="w-8 h-8 text-blue-500" />
+              <div>
+                <h3 className="font-semibold">Runway</h3>
+                <div className="text-2xl font-bold">
+                  {analysis.runway_months || 0} mo
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">Months until cash depletion</p>
+          </Card>
+          
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Users className="w-8 h-8 text-purple-500" />
+              <div>
+                <h3 className="font-semibold">Team Size</h3>
+                <div className="text-2xl font-bold">
+                  {analysis.team_size || 0}
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">Total team members</p>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Business Overview */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Business Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Company</h4>
+                  <p className="text-muted-foreground">{analysis.startup_name || 'Startup Name'}</p>
+                </div>
+                {analysis.business_overview?.industry && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Industry</h4>
+                    <Badge variant="secondary">{analysis.business_overview.industry}</Badge>
+                  </div>
+                )}
+                {analysis.business_overview?.stage && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Stage</h4>
+                    <Badge variant="outline">{analysis.business_overview.stage}</Badge>
+                  </div>
+                )}
+                {analysis.business_overview?.founded && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Founded</h4>
+                    <p className="text-muted-foreground">{analysis.business_overview.founded}</p>
+                  </div>
+                )}
+                {analysis.executive_summary && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Executive Summary</h4>
+                    <p className="text-muted-foreground leading-relaxed">{analysis.executive_summary}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Funding Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-primary" />
+                Funding Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-1">Funding Ask</h4>
+                  <p className="text-2xl font-bold text-primary">
+                    ${analysis.funding_ask ? (analysis.funding_ask / 1000000).toFixed(1) + 'M' : '0'}
+                  </p>
+                </div>
+                {analysis.funding_details?.use_of_funds && (
+                  <div>
+                    <h4 className="font-semibold mb-1">Use of Funds</h4>
+                    <p className="text-sm text-muted-foreground">{analysis.funding_details.use_of_funds}</p>
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-semibold mb-1">Funding Probability</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-primary h-2 rounded-full" 
+                        style={{ width: `${analysis.funding_probability_score || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{analysis.funding_probability_score || 0}%</span>
+                  </div>
+                </div>
+                {analysis.funding_details?.runway_extension && (
+                  <div>
+                    <h4 className="font-semibold mb-1">Runway Extension</h4>
+                    <p className="text-muted-foreground">{analysis.funding_details.runway_extension} months</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Investment Recommendation */}
+        {analysis.investment_recommendation && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                Investment Recommendation
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {analysis.investment_recommendation}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tabs for Detailed Analysis */}
         <Tabs defaultValue="insights" className="animate-fade-in" style={{ animationDelay: "200ms" }}>
           <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="insights">Slide Insights</TabsTrigger>
-            <TabsTrigger value="redflags">Red Flags</TabsTrigger>
-            <TabsTrigger value="metrics">Key Metrics</TabsTrigger>
+            <TabsTrigger value="insights">Market Analysis</TabsTrigger>
+            <TabsTrigger value="redflags">Risk Factors</TabsTrigger>
+            <TabsTrigger value="metrics">Detailed Metrics</TabsTrigger>
           </TabsList>
 
-          {/* Slide Insights */}
+          {/* Market Analysis */}
           <TabsContent value="insights" className="space-y-4">
-            {insights.map((insight, index) => (
-              <Card key={index} className="bg-card border-border hover:border-primary transition-colors">
+            {analysis.market_analysis ? (
+              <Card className="bg-card border-border">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                        insight.score >= 8 ? 'bg-success/20 text-success' :
-                        insight.score >= 6 ? 'bg-warning/20 text-warning' :
-                        'bg-destructive/20 text-destructive'
-                      }`}>
-                        <span className="font-bold">{insight.score}</span>
-                      </div>
+                  <h3 className="font-semibold text-lg mb-4">Market Analysis</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {analysis.market_analysis.tam && (
                       <div>
-                        <h3 className="font-semibold text-lg">{insight.slide}</h3>
-                        <Badge variant={insight.score >= 8 ? "default" : "secondary"} className="mt-1">
-                          {insight.score >= 8 ? 'Strong' : insight.score >= 6 ? 'Good' : 'Needs Work'}
-                        </Badge>
+                        <h4 className="font-semibold mb-2">Total Addressable Market</h4>
+                        <div className="text-2xl font-bold text-primary mb-1">
+                          ${(analysis.market_analysis.tam / 1000000000).toFixed(1)}B
+                        </div>
+                        <p className="text-sm text-muted-foreground">Market size opportunity</p>
                       </div>
-                    </div>
-                    <CheckCircle2 className="h-5 w-5 text-success" />
+                    )}
+                    {analysis.market_analysis.growth_rate && (
+                      <div>
+                        <h4 className="font-semibold mb-2">Market Growth</h4>
+                        <div className="text-2xl font-bold text-green-600 mb-1">
+                          {analysis.market_analysis.growth_rate}% CAGR
+                        </div>
+                        <p className="text-sm text-muted-foreground">Annual growth rate</p>
+                      </div>
+                    )}
+                    {analysis.market_analysis.competitive_landscape && (
+                      <div className="md:col-span-2">
+                        <h4 className="font-semibold mb-2">Competitive Landscape</h4>
+                        <p className="text-muted-foreground">{analysis.market_analysis.competitive_landscape}</p>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-muted-foreground">{insight.feedback}</p>
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              <Card className="bg-card border-border">
+                <CardContent className="p-6 text-center">
+                  <p className="text-muted-foreground">No market analysis data available</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          {/* Red Flags */}
+          {/* Risk Factors */}
           <TabsContent value="redflags" className="space-y-4">
-            {redFlags.map((flag, index) => (
-              <Card 
-                key={index} 
-                className={`bg-card border-l-4 ${
-                  flag.severity === 'high' ? 'border-l-destructive shadow-glow-warning' :
-                  flag.severity === 'medium' ? 'border-l-warning' :
-                  'border-l-muted'
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <AlertTriangle className={`h-6 w-6 mt-1 ${
-                      flag.severity === 'high' ? 'text-destructive' :
-                      flag.severity === 'medium' ? 'text-warning' :
-                      'text-muted-foreground'
-                    }`} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg">{flag.title}</h3>
-                        <Badge variant={flag.severity === 'high' ? 'destructive' : 'secondary'}>
-                          {flag.severity.toUpperCase()}
-                        </Badge>
+            {analysis.red_flags && Object.keys(analysis.red_flags).length > 0 ? (
+              Object.entries(analysis.red_flags).map(([key, flag], index) => (
+                <Card 
+                  key={index} 
+                  className="bg-card border-l-4 border-l-destructive"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <AlertTriangle className="h-6 w-6 mt-1 text-destructive" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg capitalize">{key.replace(/([A-Z])/g, ' $1')}</h3>
+                          <Badge variant="destructive">
+                            HIGH RISK
+                          </Badge>
+                        </div>
+                        <p className="text-muted-foreground">{flag as string}</p>
                       </div>
-                      <p className="text-muted-foreground">{flag.description}</p>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="bg-card border-border">
+                <CardContent className="p-6 text-center">
+                  <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
+                  <h3 className="font-semibold text-lg mb-2">No Major Risk Factors Identified</h3>
+                  <p className="text-muted-foreground">This analysis shows relatively low risk indicators</p>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </TabsContent>
 
-          {/* Key Metrics */}
+          {/* Detailed Metrics */}
           <TabsContent value="metrics" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                    Financial Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Current Revenue</span>
+                      <span className="font-semibold">
+                        ${analysis.current_revenue ? (analysis.current_revenue / 1000).toFixed(0) + 'K' : '0'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Monthly Burn</span>
+                      <span className="font-semibold text-red-500">
+                        ${analysis.monthly_burn ? (analysis.monthly_burn / 1000).toFixed(0) + 'K' : '0'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Runway</span>
+                      <span className="font-semibold">
+                        {analysis.runway_months || 0} months
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    Team Analysis
+                    Team & Operations
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Team Size</span>
-                      <span className="font-semibold">5 members</span>
+                      <span className="font-semibold">{analysis.team_size || 0} members</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Combined Experience</span>
-                      <span className="font-semibold">20+ years</span>
+                      <span className="text-muted-foreground">Burn per Employee</span>
+                      <span className="font-semibold">
+                        ${analysis.monthly_burn && analysis.team_size ? 
+                          ((analysis.monthly_burn / analysis.team_size) / 1000).toFixed(1) + 'K' : '0'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Technical Founders</span>
-                      <span className="font-semibold text-success">3/5</span>
+                      <span className="text-muted-foreground">Revenue per Employee</span>
+                      <span className="font-semibold text-green-600">
+                        ${analysis.current_revenue && analysis.team_size ? 
+                          ((analysis.current_revenue / analysis.team_size) / 1000).toFixed(0) + 'K' : '0'}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -213,22 +664,29 @@ const AnalysisDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
-                    Market Opportunity
+                    Investment Metrics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">TAM</span>
-                      <span className="font-semibold">$12B</span>
+                      <span className="text-muted-foreground">Funding Ask</span>
+                      <span className="font-semibold">
+                        ${analysis.funding_ask ? (analysis.funding_ask / 1000000).toFixed(1) + 'M' : '0'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Market Growth</span>
-                      <span className="font-semibold text-success">23% CAGR</span>
+                      <span className="text-muted-foreground">Funding Probability</span>
+                      <span className="font-semibold text-primary">
+                        {analysis.funding_probability_score || 0}%
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Competitors Identified</span>
-                      <span className="font-semibold">8</span>
+                      <span className="text-muted-foreground">Valuation Multiple</span>
+                      <span className="font-semibold">
+                        {analysis.funding_ask && analysis.current_revenue ? 
+                          (analysis.funding_ask / analysis.current_revenue).toFixed(1) + 'x' : 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -238,47 +696,33 @@ const AnalysisDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    Traction
+                    Growth Indicators
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Current ARR</span>
-                      <span className="font-semibold">$200K</span>
+                      <span className="text-muted-foreground">Growth Potential</span>
+                      <span className="font-semibold text-blue-600">
+                        {analysis.growth_potential_score || 0}/100
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Design Partners</span>
-                      <span className="font-semibold text-success">15</span>
+                      <span className="text-muted-foreground">Market Position</span>
+                      <span className="font-semibold">
+                        {analysis.growth_potential_score >= 80 ? 'Leader' :
+                         analysis.growth_potential_score >= 60 ? 'Challenger' : 'Follower'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">MoM Growth</span>
-                      <span className="font-semibold text-success">18%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Fundraising
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Round Size</span>
-                      <span className="font-semibold">$3M Seed</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Use of Funds</span>
-                      <span className="font-semibold">Clear</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Runway</span>
-                      <span className="font-semibold text-success">18 months</span>
+                      <span className="text-muted-foreground">Risk Level</span>
+                      <span className={`font-semibold ${
+                        analysis.risk_assessment_score >= 80 ? 'text-green-600' :
+                        analysis.risk_assessment_score >= 60 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {analysis.risk_assessment_score >= 80 ? 'Low' :
+                         analysis.risk_assessment_score >= 60 ? 'Medium' : 'High'}
+                      </span>
                     </div>
                   </div>
                 </CardContent>

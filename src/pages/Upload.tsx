@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, Loader2, Brain } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,19 +11,24 @@ const UploadPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
-  const [startupName, setStartupName] = useState("");
-  const [description, setDescription] = useState("");
-  const [pitchText, setPitchText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.type === "application/pdf" || selectedFile.type.includes("presentation")) {
+      const allowedTypes = [
+        "application/pdf",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ];
+      
+      if (allowedTypes.includes(selectedFile.type) || selectedFile.type.includes("presentation")) {
         setFile(selectedFile);
         toast.success("File uploaded successfully!");
       } else {
-        toast.error("Please upload a PDF or PowerPoint file");
+        toast.error("Please upload a PDF, PowerPoint, or Excel file");
       }
     }
   };
@@ -39,18 +41,26 @@ const UploadPage = () => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === "application/pdf" || droppedFile.type.includes("presentation")) {
+      const allowedTypes = [
+        "application/pdf",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ];
+      
+      if (allowedTypes.includes(droppedFile.type) || droppedFile.type.includes("presentation")) {
         setFile(droppedFile);
         toast.success("File uploaded successfully!");
       } else {
-        toast.error("Please upload a PDF or PowerPoint file");
+        toast.error("Please upload a PDF, PowerPoint, or Excel file");
       }
     }
   };
 
   const handleAnalyze = async () => {
-    if (!startupName && !pitchText && !description) {
-      toast.error("Please provide startup name, pitch details, or description");
+    if (!file) {
+      toast.error("Please upload a file to analyze");
       return;
     }
 
@@ -62,42 +72,101 @@ const UploadPage = () => {
     setIsAnalyzing(true);
     
     try {
-      // Prepare startup input for analysis
-      const startupInput = `
-Startup Name: ${startupName || 'Not provided'}
-Description: ${description || 'Not provided'}
-Pitch Details: ${pitchText || 'Not provided'}
-${file ? `Attached File: ${file.name}` : ''}
-      `.trim();
+      console.log('Sending file to local AI model...');
 
-      console.log('Sending analysis request...');
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('user_id', user.id);
 
-      // Call the Gemini analysis edge function
-      const { data, error } = await supabase.functions.invoke('analyze-startup', {
-        body: {
-          startupInput,
-          userId: user.id,
-          uploadId: null,
-        }
+      // Call local Python AI model
+      const response = await fetch('http://localhost:5000/analyze', {
+        method: 'POST',
+        body: formData,
       });
 
-      if (error) {
-        console.error('Analysis error:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.statusText}`);
       }
 
-      console.log('Analysis completed:', data);
+      const analysisData = await response.json();
+      console.log('Analysis completed:', analysisData);
 
-      toast.success("AI Analysis complete! Redirecting to results...");
+      // TODO: Save analysis results to database after running migration
+      // For now, just redirect to analysis dashboard
+      toast.success("AI Analysis complete! Redirecting to dashboard...");
       
-      // Navigate to analysis results page
+      // Navigate to analysis dashboard
       setTimeout(() => {
-        navigate("/analysis");
+        navigate('/analysis-dashboard');
       }, 1500);
+
+      // Store analysis data temporarily in session storage for development
+      sessionStorage.setItem('latest_analysis', JSON.stringify(analysisData));
 
     } catch (error) {
       console.error('Error during analysis:', error);
-      toast.error("Failed to analyze startup. Please try again.");
+      toast.error("Make sure the AI model is running. Redirecting to see demo results...");
+      
+      // Store default analysis data for demo purposes
+      const defaultAnalysisData = {
+        analysis_results: {
+          id: 'default-demo',
+          startup_name: 'TechStartup Inc. (Demo)',
+          executive_summary: 'This is demo data to showcase the investor analysis dashboard. TechStartup Inc. is a B2B SaaS platform addressing workflow automation for mid-market enterprises. The company demonstrates strong product-market fit with early traction.',
+          overall_score: 82,
+          financial_health_score: 75,
+          growth_potential_score: 88,
+          risk_assessment_score: 79,
+          current_revenue: 200000,
+          monthly_burn: 15000,
+          runway_months: 18,
+          team_size: 8,
+          funding_ask: 2000000,
+          funding_probability_score: 68,
+          business_overview: {
+            company: 'TechStartup Inc.',
+            industry: 'fintech',
+            stage: 'seed',
+            founded: 2023,
+            description: 'B2B SaaS workflow automation platform'
+          },
+          funding_details: {
+            funding_ask: 2000000,
+            use_of_funds: 'Product development, team expansion, and market penetration',
+            funding_probability: 68,
+            runway_extension: 24,
+            previous_funding: 500000
+          },
+          market_analysis: {
+            tam: 12000000000,
+            sam: 1200000000,
+            som: 120000000,
+            growth_rate: 23,
+            market_maturity: 'growing',
+            competitive_landscape: 'moderate competition with clear differentiation opportunities'
+          },
+          investment_recommendation: 'Strong investment opportunity with solid fundamentals. The team has relevant experience and the market timing is favorable. Recommend proceeding with due diligence.',
+          slide_insights: {
+            problemSolution: 'Well-articulated problem with compelling solution',
+            marketSize: 'Large addressable market with clear growth trajectory',
+            businessModel: 'Recurring revenue model with good unit economics'
+          },
+          red_flags: {
+            competition: 'Several established players in the market',
+            execution: 'Limited go-to-market experience in the team'
+          }
+        }
+      };
+      
+      sessionStorage.setItem('latest_analysis', JSON.stringify(defaultAnalysisData));
+      sessionStorage.setItem('is_default_data', 'true');
+      
+      // Navigate to analysis results after a short delay
+      setTimeout(() => {
+        navigate('/analysis');
+      }, 2000);
+      
     } finally {
       setIsAnalyzing(false);
     }
@@ -117,9 +186,9 @@ ${file ? `Attached File: ${file.name}` : ''}
 
         <Card className="bg-card border-border animate-slide-up">
           <CardHeader>
-            <CardTitle>Upload Pitch Deck</CardTitle>
+            <CardTitle>Upload Your Pitch Deck</CardTitle>
             <CardDescription>
-              Supported formats: PDF, PowerPoint (PPT, PPTX)
+              Supported formats: PDF, PowerPoint (PPT, PPTX), Excel (XLS, XLSX)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -133,7 +202,7 @@ ${file ? `Attached File: ${file.name}` : ''}
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".pdf,.ppt,.pptx"
+                accept=".pdf,.ppt,.pptx,.xls,.xlsx"
                 onChange={handleFileChange}
               />
               <label htmlFor="file-upload" className="cursor-pointer">
@@ -159,46 +228,12 @@ ${file ? `Attached File: ${file.name}` : ''}
               </label>
             </div>
 
-            {/* Startup Information */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="startup-name">Startup Name *</Label>
-                <Input
-                  id="startup-name"
-                  placeholder="Enter your startup name"
-                  value={startupName}
-                  onChange={(e) => setStartupName(e.target.value)}
-                  className="bg-background border-border"
-                />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="pitch-text">Pitch Details *</Label>
-                <Textarea
-                  id="pitch-text"
-                  placeholder="Describe your startup idea, problem you're solving, target market, business model, etc."
-                  value={pitchText}
-                  onChange={(e) => setPitchText(e.target.value)}
-                  className="bg-background border-border min-h-[150px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Additional Information (Optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Any additional context or information"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="bg-background border-border min-h-[100px]"
-                />
-              </div>
-            </div>
 
             {/* Analyze Button */}
             <Button
               onClick={handleAnalyze}
-              disabled={isAnalyzing || (!startupName && !pitchText)}
+              disabled={isAnalyzing || !file}
               className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg py-6"
             >
               {isAnalyzing ? (
@@ -218,15 +253,15 @@ ${file ? `Attached File: ${file.name}` : ''}
               <div className="space-y-3 animate-fade-in">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Analyzing with Gemini AI...
+                  Processing your pitch deck...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Evaluating market & competitors...
+                  Analyzing market & financials...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Generating insights and recommendations...
+                  Generating investor insights...
                 </div>
               </div>
             )}

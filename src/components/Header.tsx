@@ -10,51 +10,78 @@ import {
   Upload, 
   User, 
   Home,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isFounder, isInvestor } = useAuth();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const navigationLinks = [
-    {
-      name: 'Home',
-      href: '/',
-      icon: Home,
-    },
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: BarChart3,
-      requireAuth: true,
-    },
-    {
-      name: 'Upload',
-      href: '/upload',
-      icon: Upload,
-    },
-    {
-      name: 'Analysis',
-      href: '/analysis',
-      icon: TrendingUp,
-      requireAuth: true,
-    },
-  ];
+  // Dynamic navigation based on user role
+  const getNavigationLinks = () => {
+    const baseLinks = [
+      {
+        name: 'Home',
+        href: '/',
+        icon: Home,
+      },
+    ];
 
-  const filteredLinks = navigationLinks.filter(link => 
-    !link.requireAuth || (link.requireAuth && user)
-  );
+    if (user) {
+      if (isFounder) {
+        baseLinks.push({
+          name: 'Dashboard',
+          href: '/dashboard',
+          icon: BarChart3,
+        });
+      }
+
+      if (isInvestor) {
+        baseLinks.push(
+          {
+            name: 'Upload',
+            href: '/upload',
+            icon: Upload,
+          },
+          {
+            name: 'Analysis',
+            href: '/analysis',
+            icon: TrendingUp,
+          }
+        );
+      }
+    }
+
+    return baseLinks;
+  };
+
+  const navigationLinks = getNavigationLinks();
+
+  const filteredLinks = navigationLinks;
 
   const handleSignOut = async () => {
+    if (isLoggingOut) return; // Prevent multiple logout attempts
+    
+    console.log('🔐 Header: Starting logout...');
+    setIsLoggingOut(true);
+    
     try {
       await signOut();
+      console.log('🔐 Header: Logout successful');
       setIsOpen(false);
     } catch (error) {
-      console.error('Failed to sign out:', error);
+      console.error('🔐 Header: Failed to sign out:', error);
+      // Even if logout fails, close the menu
+      setIsOpen(false);
+      // You could show a toast notification here if needed
+    } finally {
+      setIsLoggingOut(false);
+      console.log('🔐 Header: Logout process finished');
     }
   };
 
@@ -100,10 +127,17 @@ const Header = () => {
             variant="outline"
             size="sm"
             onClick={handleSignOut}
+            disabled={isLoggingOut}
             className="flex items-center gap-2"
           >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
+            {isLoggingOut ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </span>
           </Button>
         </div>
       ) : (

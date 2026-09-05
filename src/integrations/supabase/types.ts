@@ -20,7 +20,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           updated_at: string | null
-          role: string | null
+          role: 'founder' | 'investor' | null
         }
         Insert: {
           id: string
@@ -29,7 +29,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           updated_at?: string | null
-          role?: string | null
+          role?: 'founder' | 'investor' | null
         }
         Update: {
           id?: string
@@ -38,7 +38,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           updated_at?: string | null
-          role?: string | null
+          role?: 'founder' | 'investor' | null
         }
         Relationships: [
           {
@@ -564,53 +564,7 @@ export type Database = {
         ]
       }
 
-      investors: {
-        Row: {
-          id: string
-          profile_id: string
-          org_name: string | null
-          investor_type: string | null
-          preferred_industries: Json | null
-          invested_startups: Json | null
-          total_invested: number | null
-          recent_activity: Json | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          profile_id: string
-          org_name?: string | null
-          investor_type?: string | null
-          preferred_industries?: Json | null
-          invested_startups?: Json | null
-          total_invested?: number | null
-          recent_activity?: Json | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          profile_id?: string
-          org_name?: string | null
-          investor_type?: string | null
-          preferred_industries?: Json | null
-          invested_startups?: Json | null
-          total_invested?: number | null
-          recent_activity?: Json | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "investors_profile_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+
     }
     Views: {
       [_ in never]: never

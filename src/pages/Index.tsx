@@ -6,7 +6,7 @@ import { Brain, FileText, AlertTriangle, Zap, LineChart, MessageSquare } from "l
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isFounder, isInvestor } = useAuth();
   const features = [
     {
       icon: Brain,
@@ -57,18 +57,26 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg px-8 py-6"
-                onClick={() => navigate(user ? '/upload' : '/auth')}
+                onClick={() => {
+                  if (!user) {
+                    navigate('/auth');
+                  } else if (isInvestor) {
+                    navigate('/upload');
+                  } else if (isFounder) {
+                    navigate('/dashboard');
+                  }
+                }}
               >
-                {user ? 'Analyze Your Deck' : 'Get Started'}
+                {!user ? 'Get Started' : isInvestor ? 'Analyze Pitch Decks' : 'View Dashboard'}
               </Button>
-              {user && (
+              {user && isInvestor && (
                 <Button 
                   size="lg" 
                   variant="secondary" 
                   className="text-lg px-8 py-6"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/analysis')}
                 >
-                  View Dashboard
+                  View Analysis History
                 </Button>
               )}
             </div>
@@ -115,7 +123,15 @@ const Index = () => {
               size="lg" 
               variant="secondary" 
               className="text-lg px-8 py-6 animate-glow"
-              onClick={() => navigate(user ? '/upload' : '/auth')}
+              onClick={() => {
+                if (!user) {
+                  navigate('/auth');
+                } else if (isInvestor) {
+                  navigate('/upload');
+                } else if (isFounder) {
+                  navigate('/dashboard');
+                }
+              }}
             >
               Get Started Now
             </Button>

@@ -4,35 +4,57 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Building2, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import type { UserRole } from '@/contexts/AuthContext';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }).max(100),
 });
 
+const signUpSchema = authSchema.extend({
+  role: z.enum(['founder', 'investor'], { message: "Please select your role" }),
+});
+
 const Auth = () => {
-  const { user, loading, signUp, signIn } = useAuth();
+  const { user, loading, signUp, signIn, profile, isFounder, isInvestor } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ 
+    email: '', 
+    password: '', 
+    role: '' as UserRole | '' 
+  });
 
   useEffect(() => {
-    if (user && !loading) {
-      navigate('/');
+    if (user && !loading && profile) {
+      // Redirect based on user role
+      if (isFounder) {
+        navigate('/dashboard');
+      } else if (isInvestor) {
+        navigate('/upload');
+      } else {
+        // Fallback to home
+        navigate('/');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, profile, isFounder, isInvestor, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      authSchema.parse(formData);
+      if (isLogin) {
+        authSchema.parse(formData);
+      } else {
+        signUpSchema.parse(formData);
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -49,7 +71,7 @@ const Auth = () => {
     try {
       const { error } = isLogin 
         ? await signIn(formData.email, formData.password)
-        : await signUp(formData.email, formData.password);
+        : await signUp(formData.email, formData.password, formData.role as UserRole);
 
       if (error) {
         const isEmailNotConfirmed = error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed');
@@ -68,6 +90,12 @@ const Auth = () => {
         toast({
           title: 'Success!',
           description: 'Please check your email to confirm your account.',
+        });
+      } else {
+        // Login successful - user will be redirected by the useEffect hook
+        toast({
+          title: 'Welcome back!',
+          description: 'Successfully signed in.',
         });
       }
     } catch (error) {
@@ -131,6 +159,41 @@ const Auth = () => {
                 </p>
               )}
             </div>
+            
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="role">I am a</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value: UserRole) => setFormData({ ...formData, role: value })}
+                  disabled={isSubmitting}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="founder">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <div className="font-medium">Founder</div>
+                          <div className="text-xs text-muted-foreground">I'm building a startup</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="investor">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-green-500" />
+                        <div>
+                          <div className="font-medium">Investor</div>
+                          <div className="text-xs text-muted-foreground">I want to analyze pitch decks</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <Button
               type="submit"
               className="w-full h-12 text-base font-semibold"
@@ -151,7 +214,10 @@ const Auth = () => {
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setFormData({ email: '', password: '', role: '' });
+              }}
               className="text-sm text-primary hover:underline"
               disabled={isSubmitting}
             >

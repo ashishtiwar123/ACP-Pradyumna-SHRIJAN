@@ -1,50 +1,29 @@
-import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireProfile?: boolean;
+  requiredRole?: 'founder' | 'investor';
+  requireCompleteProfile?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireProfile = false }: ProtectedRouteProps) => {
-  const { user, loading: authLoading } = useAuth();
-  const [profileLoading, setProfileLoading] = useState(requireProfile);
-  const [hasProfile, setHasProfile] = useState(false);
+const ProtectedRoute = ({ 
+  children, 
+  requiredRole, 
+  requireCompleteProfile = false 
+}: ProtectedRouteProps) => {
+  const { 
+    user, 
+    loading: authLoading, 
+    profile, 
+    isFounder, 
+    isInvestor,
+    hasCompleteStartupProfile 
+  } = useAuth();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkProfile = async () => {
-      if (!user || !requireProfile) {
-        setProfileLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('startup_profiles')
-          .select('is_complete')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error) throw error;
-        setHasProfile(!!data?.is_complete);
-      } catch (error) {
-        console.error('Error checking profile:', error);
-        setHasProfile(false);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-
-    if (!authLoading) {
-      checkProfile();
-    }
-  }, [user, requireProfile, authLoading]);
-
-  if (authLoading || profileLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -56,8 +35,29 @@ const ProtectedRoute = ({ children, requireProfile = false }: ProtectedRouteProp
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (requireProfile && !hasProfile) {
+  // If no profile exists, redirect to auth (this shouldn't happen after proper signup)
+  if (!profile) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Role-based access control
+  if (requiredRole) {
+    if (requiredRole === 'founder' && !isFounder) {
+      return <Navigate to="/upload" replace />;
+    }
+    if (requiredRole === 'investor' && !isInvestor) {
+      return <Navigate to="/complete-profile" replace />;
+    }
+  }
+
+  // For founders accessing dashboard: redirect to complete-profile if no startup profile exists
+  if (isFounder && !hasCompleteStartupProfile && location.pathname === '/dashboard') {
     return <Navigate to="/complete-profile" replace />;
+  }
+
+  // For complete-profile page: only allow founders
+  if (location.pathname === '/complete-profile' && !isFounder) {
+    return <Navigate to="/upload" replace />;
   }
 
   return <>{children}</>;
