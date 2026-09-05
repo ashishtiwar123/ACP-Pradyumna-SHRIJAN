@@ -24,18 +24,26 @@ export class DataFetchingService {
   private static determineDomainType(startupProfile: StartupProfile): 'healthcare' | 'fintech' | 'food' | 'ecommerce' {
     const industry = startupProfile.industry?.toLowerCase() || '';
     
-    if (industry.includes('health') || industry.includes('medical') || industry.includes('biotech')) {
-      return 'healthcare';
-    } else if (industry.includes('fintech') || industry.includes('finance') || industry.includes('banking')) {
-      return 'fintech';
-    } else if (industry.includes('food') || industry.includes('restaurant') || industry.includes('culinary')) {
-      return 'food';
-    } else if (industry.includes('ecommerce') || industry.includes('retail') || industry.includes('marketplace')) {
-      return 'ecommerce';
+    console.log('🎯 Determining domain type for industry:', industry);
+    
+    let domainType: 'healthcare' | 'fintech' | 'food' | 'ecommerce' = 'fintech'; // default
+    
+    if (industry.includes('health') || industry.includes('medical') || industry.includes('biotech') || 
+        industry.includes('pharma') || industry.includes('clinic') || industry.includes('hospital')) {
+      domainType = 'healthcare';
+    } else if (industry.includes('fintech') || industry.includes('finance') || industry.includes('banking') || 
+               industry.includes('payment') || industry.includes('crypto') || industry.includes('blockchain')) {
+      domainType = 'fintech';
+    } else if (industry.includes('food') || industry.includes('restaurant') || industry.includes('culinary') || 
+               industry.includes('beverage') || industry.includes('agriculture') || industry.includes('grocery')) {
+      domainType = 'food';
+    } else if (industry.includes('ecommerce') || industry.includes('retail') || industry.includes('marketplace') || 
+               industry.includes('shopping') || industry.includes('e-commerce')) {
+      domainType = 'ecommerce';
     }
     
-    // Default fallback - could be improved with more sophisticated classification
-    return 'fintech';
+    console.log('✅ Determined domain type:', domainType, 'for industry:', industry);
+    return domainType;
   }
 
   /**
@@ -154,6 +162,12 @@ export class DataFetchingService {
         this.fetchFounderAssets(userId),
         this.fetchDomainDetails(startupProfile.id, domainType)
       ]);
+
+      console.log(`📋 Domain details fetch result for ${domainType}:`, {
+        hasDomainDetails: !!domainDetails,
+        domainDetailsKeys: domainDetails ? Object.keys(domainDetails) : null,
+        startupProfileId: startupProfile.id
+      });
 
       const dashboardData: DashboardData = {
         startup_profile: startupProfile,

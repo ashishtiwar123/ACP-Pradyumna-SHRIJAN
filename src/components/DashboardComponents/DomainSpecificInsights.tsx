@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
+import { Button } from '../ui/button';
 import { 
   Activity, 
   TrendingUp, 
@@ -28,25 +29,87 @@ interface DomainInsightsProps {
   analysisResult?: AIAnalysisResult;
 }
 
+// Helper function to validate and log domain data
+const validateDomainData = (dashboardData: DashboardData) => {
+  const validation = {
+    hasStartupProfile: !!dashboardData.startup_profile,
+    startupProfileId: dashboardData.startup_profile?.id,
+    domainType: dashboardData.domain_type,
+    hasDomainDetails: !!dashboardData.domain_details,
+    domainDetailsType: typeof dashboardData.domain_details,
+    domainDetailsKeys: dashboardData.domain_details ? Object.keys(dashboardData.domain_details) : null,
+    domainDetailsValues: dashboardData.domain_details ? Object.values(dashboardData.domain_details).map(v => typeof v) : null
+  };
+  
+  console.log('Domain Data Validation:', validation);
+  
+  // Check for common issues
+  if (!dashboardData.domain_details && dashboardData.domain_type) {
+    console.warn(`⚠️ Domain type is ${dashboardData.domain_type} but domain_details is null`);
+  }
+  
+  if (dashboardData.domain_details && Object.keys(dashboardData.domain_details).length === 0) {
+    console.warn('⚠️ Domain details object exists but is empty');
+  }
+  
+  return validation;
+};
+
 // Healthcare-specific insights
 const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysisResult }) => {
   const healthcareDetails = dashboardData.domain_details as any;
+  
+  console.log('HealthcareInsights - Raw Data:', {
+    healthcareDetails,
+    hasDetails: !!healthcareDetails,
+    keys: healthcareDetails ? Object.keys(healthcareDetails) : 'no details'
+  });
   
   if (!healthcareDetails) {
     return (
       <Card>
         <CardContent className="text-center py-8">
           <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Complete your healthcare details to see industry-specific insights</p>
+          <h3 className="text-lg font-semibold mb-2">Healthcare Industry Insights</h3>
+          <p className="text-muted-foreground mb-4">
+            Complete your healthcare profile to access specialized insights for clinical development, regulatory compliance, and market analysis.
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.href = '/complete-profile'}
+            className="mt-4"
+          >
+            Complete Healthcare Profile
+          </Button>
         </CardContent>
       </Card>
     );
   }
 
-  // Parse actual data from healthcare details
-  const regulatoryApprovals = healthcareDetails.regulatory_approvals?.split(',') || [];
-  const clinicalPartners = healthcareDetails.clinical_partners?.split(',') || [];
-  const timeToMarket = healthcareDetails.estimated_time_to_market_months || 0;
+  // Parse actual data from healthcare details with error handling
+  let regulatoryApprovals: string[] = [];
+  let clinicalPartners: string[] = [];
+  let timeToMarket = 0;
+  
+  try {
+    if (healthcareDetails.regulatory_approvals) {
+      regulatoryApprovals = healthcareDetails.regulatory_approvals.split(',').map((a: string) => a.trim()).filter(Boolean);
+    }
+    
+    if (healthcareDetails.clinical_partners) {
+      clinicalPartners = healthcareDetails.clinical_partners.split(',').map((p: string) => p.trim()).filter(Boolean);
+    }
+    
+    timeToMarket = Number(healthcareDetails.estimated_time_to_market_months) || 0;
+    
+    console.log('HealthcareInsights - Processed Data:', {
+      regulatoryApprovalsCount: regulatoryApprovals.length,
+      clinicalPartnersCount: clinicalPartners.length,
+      timeToMarket
+    });
+  } catch (error) {
+    console.error('Error parsing healthcare details:', error);
+  }
 
   // Sample data for healthcare charts
   const clinicalProgressData = [
@@ -238,22 +301,145 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
 const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysisResult }) => {
   const fintechDetails = dashboardData.domain_details as any;
   
+  // Enhanced logging for debugging
+  console.log('FintechInsights - Raw Data:', {
+    fintechDetails,
+    hasDetails: !!fintechDetails,
+    detailsType: typeof fintechDetails,
+    keys: fintechDetails ? Object.keys(fintechDetails) : 'no details'
+  });
+  
+  // If no fintech details, show a more informative fallback
   if (!fintechDetails) {
     return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Complete your fintech details to see industry-specific insights</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="text-center py-8">
+            <CreditCard className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Fintech Industry Insights</h3>
+            <p className="text-muted-foreground mb-4">
+              Complete your fintech industry profile to unlock specialized insights including payment analytics, compliance tracking, and market analysis.
+            </p>
+            
+            {/* Show what insights would be available */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 text-left">
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h4 className="font-semibold text-sm mb-2">Payment Analytics</h4>
+                <p className="text-xs text-muted-foreground">Volume tracking, transaction analysis, market trends</p>
+              </div>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h4 className="font-semibold text-sm mb-2">Compliance Monitoring</h4>
+                <p className="text-xs text-muted-foreground">KYC processes, regulatory requirements, license tracking</p>
+              </div>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h4 className="font-semibold text-sm mb-2">Market Presence</h4>
+                <p className="text-xs text-muted-foreground">Geographic coverage, integration partners</p>
+              </div>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h4 className="font-semibold text-sm mb-2">Performance Metrics</h4>
+                <p className="text-xs text-muted-foreground">Financial ratios, growth indicators, risk assessment</p>
+              </div>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/complete-profile'}
+              className="mt-6"
+            >
+              Complete Fintech Profile
+            </Button>
+          </CardContent>
+        </Card>
+        
+        {/* Show basic placeholder cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Payment Volume</p>
+                  <p className="text-2xl font-bold text-muted-foreground">-</p>
+                </div>
+                <CreditCard className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Markets</p>
+                  <p className="text-2xl font-bold text-muted-foreground">-</p>
+                </div>
+                <MapPin className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Integrations</p>
+                  <p className="text-2xl font-bold text-muted-foreground">-</p>
+                </div>
+                <Target className="w-8 h-8 text-muted-foreground" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
-  // Parse the actual data structure from your API
-  const paymentsVolume = parseInt(fintechDetails.payments_volume_30d) || 0;
-  const principalMarkets = fintechDetails.principal_markets?.split(',') || [];
-  const integrations = fintechDetails.integrations?.split(',') || [];
-  const licenseRequirements = fintechDetails.licencing_requirements?.split(',') || [];
+  // Parse the actual data structure from your API with better error handling
+  let paymentsVolume = 0;
+  let principalMarkets: string[] = [];
+  let integrations: string[] = [];
+  let licenseRequirements: string[] = [];
+  
+  try {
+    // Handle payments volume with various data types
+    if (fintechDetails.payments_volume_30d) {
+      paymentsVolume = typeof fintechDetails.payments_volume_30d === 'string' 
+        ? parseInt(fintechDetails.payments_volume_30d) || 0
+        : Number(fintechDetails.payments_volume_30d) || 0;
+    }
+    
+    // Handle markets with fallback
+    if (fintechDetails.principal_markets) {
+      principalMarkets = typeof fintechDetails.principal_markets === 'string'
+        ? fintechDetails.principal_markets.split(',').map((m: string) => m.trim()).filter(Boolean)
+        : [];
+    }
+    
+    // Handle integrations with fallback
+    if (fintechDetails.integrations) {
+      integrations = typeof fintechDetails.integrations === 'string'
+        ? fintechDetails.integrations.split(',').map((i: string) => i.trim()).filter(Boolean)
+        : [];
+    }
+    
+    // Handle license requirements with fallback
+    if (fintechDetails.licencing_requirements) {
+      licenseRequirements = typeof fintechDetails.licencing_requirements === 'string'
+        ? fintechDetails.licencing_requirements.split(',').map((l: string) => l.trim()).filter(Boolean)
+        : [];
+    }
+    
+    console.log('FintechInsights - Processed Data:', {
+      paymentsVolume,
+      principalMarketsCount: principalMarkets.length,
+      integrationsCount: integrations.length,
+      licenseRequirementsCount: licenseRequirements.length,
+      principalMarkets,
+      integrations: integrations.slice(0, 3), // Log first 3 for debugging
+      licenseRequirements: licenseRequirements.slice(0, 3)
+    });
+    
+  } catch (error) {
+    console.error('Error parsing fintech details:', error);
+    // Continue with default empty values
+  }
 
   // Sample data for fintech charts based on actual payment volume
   const paymentVolumeData = [
@@ -270,6 +456,10 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
     region: market.trim(),
     coverage: Math.max(20, 100 - index * 25) // Decreasing coverage for demo
   }));
+
+  
+  console.log("dashboardData:", dashboardData);
+  console.log('analysisResult:', analysisResult);
 
   return (
     <div className="space-y-6">
@@ -712,26 +902,105 @@ const EcommerceInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analy
 
 // Main domain insights component
 export const DomainSpecificInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysisResult }) => {
-  const { domain_type } = dashboardData;
+  const { domain_type, domain_details } = dashboardData;
 
-  switch (domain_type) {
-    case 'healthcare':
-      return <HealthcareInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
-    case 'fintech':
-      return <FintechInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
-    case 'food':
-      return <FoodInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
-    case 'ecommerce':
-      return <EcommerceInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
-    default:
-      return (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">Domain-specific insights will appear here once your industry is identified</p>
-          </CardContent>
-        </Card>
-      );
+  // Validate and log data
+  const validationResult = validateDomainData(dashboardData);
+  
+  // Add comprehensive logging for debugging
+  console.log('DomainSpecificInsights - Full Props:', {
+    domainType: domain_type,
+    domainDetails: domain_details,
+    hasDomainDetails: !!domain_details,
+    domainDetailsKeys: domain_details ? Object.keys(domain_details) : 'null',
+    startupProfileId: dashboardData.startup_profile?.id,
+    analysisResultExists: !!analysisResult,
+    validation: validationResult
+  });
+
+  // If no domain_details but we have a domain_type, show a specific message
+  if (!domain_details && domain_type) {
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <Target className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2 capitalize">
+            {domain_type.replace('_', ' ')} Insights
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            Complete your {domain_type} industry details to see specialized insights and analytics.
+          </p>
+          <div className="space-y-3">
+            <div className="bg-muted/30 p-3 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Domain Type:</strong> {domain_type.charAt(0).toUpperCase() + domain_type.slice(1)}
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/complete-profile'}
+              className="mt-4"
+            >
+              Complete {domain_type.charAt(0).toUpperCase() + domain_type.slice(1)} Profile
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Try to render the appropriate domain component with error boundaries
+  try {
+    switch (domain_type) {
+      case 'healthcare':
+        return <HealthcareInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
+      case 'fintech':
+        return <FintechInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
+      case 'food':
+        return <FoodInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
+      case 'ecommerce':
+        return <EcommerceInsights dashboardData={dashboardData} analysisResult={analysisResult} />;
+      default:
+        return (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-2">
+                Industry-specific insights will appear here
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Domain: {domain_type || 'Not specified'}
+              </p>
+            </CardContent>
+          </Card>
+        );
+    }
+  } catch (error) {
+    console.error('Error rendering domain insights:', error);
+    return (
+      <Card>
+        <CardContent className="text-center py-8">
+          <AlertTriangle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">
+            Unable to Load Domain Insights
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            There was an issue loading your {domain_type} insights.
+          </p>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Domain: {domain_type || 'Unknown'}</p>
+            <p>Data Available: {domain_details ? 'Yes' : 'No'}</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            Retry Loading
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 };
 
