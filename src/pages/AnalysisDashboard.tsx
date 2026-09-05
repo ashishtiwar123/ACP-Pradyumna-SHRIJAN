@@ -380,51 +380,6 @@ const AnalysisDashboard = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button 
-                onClick={() => {
-                  // Test with the exact data format you provided
-                  const testData = {
-                    "idx": 3,
-                    "id": "6de1cef1-2ccb-40f5-a8d9-e5ea5fb406fd",
-                    "user_id": "60e4e929-e234-4f24-ac4d-908cdd23de4d",
-                    "executive_summary": "TasteBot, led by CEO Miguel Torres and CTO Priya Sharma (Food Scientist), provides an AI-powered recommendation system to optimize restaurant menus, addressing financial losses and customer complaints from inefficient planning. Currently in pilot with 5 US restaurants, it shows 30% repeat client growth and $12k revenue. Seeking $150k funding, it faces an $8k monthly burn and competition from OpenTable/Toast POS. Further due diligence is recommended.",
-                    "slide_insights": "{\"key_problems\": \"Restaurants experience financial losses and customer complaints due to inefficient menu planning and an inability to accurately predict customer dish preferences.\", \"startup_name\": \"TasteBot\", \"team_overview\": \"Team of 6 people, led by CEO Miguel Torres and CTO Priya Sharma (who is also a Food Scientist).\", \"funding_status\": \"Currently seeking $150,000 in funding. No funding secured. $8k monthly burn rate.\", \"solution_summary\": \"TasteBot offers an AI-powered recommendation system designed to predict customer dish preferences and optimize restaurant menus.\", \"traction_metrics\": \"Pilot stage with 5 restaurants, 30% increase in repeat clients, current revenue of $12k.\", \"vision_statement\": \"N/A\", \"market_highlights\": \"Restaurants in the United States.\", \"risks_and_red_flags\": \"No funding secured, $8k monthly burn rate, seeking $150,000. Competition from established players like OpenTable and Toast POS.\"}",
-                    "red_flags": "{\"market\": \"Competition from OpenTable / Toast POS.\", \"financial\": \"No funding secured, $8k monthly burn rate, seeking $150,000.\", \"regulatory\": \"N/A\", \"operational\": \"N/A\"}",
-                    "key_metrics": "{\"traction\": \"pilot 5 restaurants, +30% repeat clients\", \"team_size\": 6, \"funding_ask\": 150000, \"monthly_burn\": 8000, \"runway_months\": 0, \"current_revenue\": 12000}",
-                    "overall_score": 80,
-                    "created_at": "2025-10-11 08:20:54.984511+00",
-                    "startup_name": "TasteBot",
-                    "financial_health_score": null,
-                    "growth_potential_score": 80,
-                    "risk_assessment_score": 60,
-                    "current_revenue": "12000",
-                    "monthly_burn": "8000",
-                    "runway_months": 0,
-                    "team_size": 6,
-                    "funding_ask": "150000",
-                    "funding_probability_score": null,
-                    "business_overview": "{\"problem\": \"Restaurants experience financial losses and customer complaints due to inefficient menu planning and an inability to accurately predict customer dish preferences.\", \"solution\": \"TasteBot offers an AI-powered recommendation system designed to predict customer dish preferences and optimize restaurant menus.\", \"traction\": \"pilot 5 restaurants, +30% repeat clients\", \"competition\": \"OpenTable / Toast POS\", \"business_model\": \"SaaS subscription restaurants\"}",
-                    "funding_details": "{\"funding_ask\": 150000, \"use_of_funds\": \"N/A\", \"funding_stage\": \"N/A\", \"funding_raised\": 0}",
-                    "investment_recommendation": "Further due diligence required",
-                    "comparable_companies": "[]",
-                    "market_analysis": "{\"market_trends\": \"Rising adoption of AI technologies across various industries, including the restaurant sector.\", \"target_market\": \"Restaurants in the United States.\", \"competitive_edge\": \"AI-driven predictive capabilities for menu optimization, offering a specialized function compared to broader platforms like OpenTable or Toast POS.\", \"market_size_estimate\": \"N/A\"}",
-                    "status": "completed"
-                  };
-                  
-                  try {
-                    const processedData = processApiAnalysisData(testData);
-                    exportToPDF(processedData);
-                    toast.success("Test PDF generated successfully!");
-                  } catch (error) {
-                    console.error("Error generating test PDF:", error);
-                    toast.error("Failed to generate test PDF");
-                  }
-                }}
-                variant="outline"
-                className="mr-2"
-              >
-                Test PDF Export
-              </Button>
               <Button onClick={() => navigate("/upload")} className="bg-gradient-primary">
                 New Analysis
               </Button>
