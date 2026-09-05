@@ -118,10 +118,10 @@ const UploadPage = () => {
       // Process and insert analysis results and logs
       let analysisResultId = null;
       
-      // Insert analysis_results if present
-      if (result.result?.analysis_results || result.expected_outputs?.result?.analysis_results) {
-        const analysisResults = result.result?.analysis_results || result.expected_outputs?.result?.analysis_results;
-        
+      // Insert analysis_results if present - check expected_outputs first
+      const analysisResults = result.expected_outputs?.result?.analysis_results || result.result?.analysis_results;
+      
+      if (analysisResults) {
         // Create a clean results object with only the fields that exist in the schema
         const resultsForInsert = {
           user_id: user.id,
@@ -149,6 +149,7 @@ const UploadPage = () => {
         };
         
         console.log('Inserting analysis results:', resultsForInsert);
+        console.log('Original analysis results from AI:', analysisResults);
         
         const { data: analysisResultRow, error: analysisResultError } = await supabase
           .from('analysis_results')
@@ -165,10 +166,10 @@ const UploadPage = () => {
         console.log('Analysis results saved successfully');
       }
       
-      // Insert analysis_logs if present
-      if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
-        const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
-        
+      // Insert analysis_logs if present - check expected_outputs first
+      const analysisLogs = result.expected_outputs?.result?.analysis_logs || result.result?.analysis_logs;
+      
+      if (analysisLogs) {
         // Create a completely clean logs object - ensure no unwanted fields
         const cleanLogsData = {
           user_id: user.id,
@@ -185,11 +186,8 @@ const UploadPage = () => {
           processing_time_seconds: analysisLogs.processing_time_seconds ? Number(analysisLogs.processing_time_seconds) : null,
         };
         
-        // Extra safety: explicitly remove any id or created_at fields
-        delete (cleanLogsData as any).id;
-        delete (cleanLogsData as any).created_at;
-        
         console.log('Inserting analysis logs:', cleanLogsData);
+        console.log('Original AI logs data:', analysisLogs);
         
         const { data: analysisLogRow, error: analysisLogError } = await supabase
           .from('analysis_logs')
