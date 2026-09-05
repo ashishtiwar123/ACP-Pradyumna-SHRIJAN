@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 
 const CompleteProfile = () => {
   const { user } = useAuth();
@@ -125,6 +125,343 @@ const CompleteProfile = () => {
     emergency_fund_months: '',
     risk_tolerance: '',
   });
+
+  const [autoFillIndex, setAutoFillIndex] = useState(0);
+
+  const autoFillPresets = [
+    {
+      name: 'NovaPay AI (FinTech)',
+      basicData: {
+        startup_name: 'NovaPay AI',
+        industry: 'fintech',
+        stage: 'seed',
+        description: 'AI-driven payment fraud detection and automated checkout authorization for mid-market merchants.',
+        team_size: '12',
+        founded_year: '2024',
+        website: 'https://novapay.ai',
+      },
+      extendedData: {
+        headquarters: 'San Francisco, CA',
+        legal_entity_name: 'NovaPay Technologies Inc.',
+        incorporation_country: 'United States',
+        contact_email: 'founder@novapay.ai',
+        contact_phone: '+15550192834',
+        revenue_current_year: '350000',
+        monthly_burn: '25000',
+        runway_months: '18',
+        funding_ask: '2000000',
+        funding_use: '45% Engineering & AI Team Expansion, 35% GTM Sales, 20% Security & Compliance',
+      },
+      domainData: {
+        regulatory_approvals: 'HIPAA compliant, FDA Class II pre-submission filed',
+        clinical_stage: 'Phase II Pilot',
+        target_patient_population: 'Chronic disease & diabetes management',
+        reimbursement_strategy: 'B2B enterprise SaaS & insurance provider reimbursement',
+        clinical_partners: 'Mayo Clinic, Stanford Health Care',
+        estimated_time_to_market_months: '18',
+        licencing_requirements: 'FinCEN MSB registered, Money Transmitter License pending in 12 states',
+        payments_volume_30d: '1250000',
+        kyc_process: 'Automated instant identity verification with synthetic fraud detection',
+        principal_markets: 'North America, EU, APAC',
+        integrations: 'Stripe, Plaid, Razorpay, Banking APIs',
+        suppliers: 'Organic Valley Farms, Global Spices Co.',
+        supply_chain_risks: 'Perishable cold chain temperature fluctuations',
+        perishability_days: '45',
+        food_safety_certifications: 'USDA Organic, HACCP Certified, SQF Level 2',
+        gross_margin_percent: '52',
+        primary_channels: 'Shopify Storefront, Amazon Marketplace, Direct Web',
+        average_order_value: '85',
+        monthly_active_buyers: '14200',
+        fulfillment_strategy: '3PL Warehousing with 2-day delivery across US',
+        return_rate_percent: '4.2',
+      },
+      founderAssetsData: {
+        personal_net_worth: '750000',
+        liquid_assets: '150000',
+        personal_annual_income: '160000',
+        credit_score: '780',
+        stock_investments: '80000',
+        crypto_investments: '30000',
+        real_estate_investments: '350000',
+        other_investments: '40000',
+        primary_residence_value: '650000',
+        investment_properties_value: '350000',
+        total_real_estate_debt: '400000',
+        previous_startup_exits: '500000',
+        current_business_equity_value: '1200000',
+        intellectual_property_value: '200000',
+        business_assets_description: 'Proprietary graph AI fraud prevention algorithm & pending patents',
+        personal_debt: '20000',
+        monthly_personal_expenses: '7500',
+        dependents_count: '2',
+        personal_funds_committed_to_startup: '120000',
+        previous_funding_raised: '400000',
+        investor_connections: 'Y Combinator alumni, Techstars mentors, Sequoia scout network',
+        board_memberships: 'NovaPay Technologies, FinTech Innovators Foundation',
+        industry_experience_years: '12',
+        previous_companies: 'Ex-Senior Engineer at PayPal, Tech Lead at Razorpay',
+        professional_network_value: 'Strong network of fintech CTOs and VP Risk executives',
+        advisory_roles: 'Advisor at EarlyStage Ventures',
+        insurance_coverage_amount: '2000000',
+        retirement_savings: '180000',
+        emergency_fund_months: '8',
+        risk_tolerance: 'high',
+      }
+    },
+    {
+      name: 'BioPulse Therapeutics (Healthcare)',
+      basicData: {
+        startup_name: 'BioPulse Therapeutics',
+        industry: 'healthcare',
+        stage: 'series-a',
+        description: 'AI-powered remote patient monitoring and early cardiac arrhythmia diagnostic platform.',
+        team_size: '18',
+        founded_year: '2023',
+        website: 'https://biopulse.med',
+      },
+      extendedData: {
+        headquarters: 'Boston, MA',
+        legal_entity_name: 'BioPulse Health Systems LLC',
+        incorporation_country: 'United States',
+        contact_email: 'contact@biopulse.med',
+        contact_phone: '+16175550188',
+        revenue_current_year: '620000',
+        monthly_burn: '45000',
+        runway_months: '22',
+        funding_ask: '5000000',
+        funding_use: '50% Clinical Trials & FDA Clearance, 30% Enterprise Hospital Sales, 20% R&D',
+      },
+      domainData: {
+        regulatory_approvals: 'FDA 510(k) cleared for Class II diagnostic device, HIPAA & ISO 27001 certified',
+        clinical_stage: 'Phase II Clinical Trial at Brigham and Women Hospital',
+        target_patient_population: 'Elderly cardiovascular patients and outpatient post-op recovery',
+        reimbursement_strategy: 'CPT code reimbursement via Medicare/Medicaid and private commercial insurers',
+        clinical_partners: 'Mayo Clinic, Harvard Medical School, Johns Hopkins Medicine',
+        estimated_time_to_market_months: '12',
+        licencing_requirements: 'State medical device distributor licenses',
+        payments_volume_30d: '0',
+        kyc_process: 'Patient identity verification & HIPAA compliance portal',
+        principal_markets: 'US, EU',
+        integrations: 'Epic Systems, Cerner EHR, Apple HealthKit',
+        suppliers: 'Medical Sensor Components Inc.',
+        supply_chain_risks: 'Sterile component delivery delays',
+        perishability_days: '365',
+        food_safety_certifications: 'N/A',
+        gross_margin_percent: '68',
+        primary_channels: 'Direct Hospital Enterprise Sales',
+        average_order_value: '25000',
+        monthly_active_buyers: '120',
+        fulfillment_strategy: 'Direct Medical Courier',
+        return_rate_percent: '1.0',
+      },
+      founderAssetsData: {
+        personal_net_worth: '1200000',
+        liquid_assets: '300000',
+        personal_annual_income: '220000',
+        credit_score: '810',
+        stock_investments: '150000',
+        crypto_investments: '10000',
+        real_estate_investments: '500000',
+        other_investments: '50000',
+        primary_residence_value: '850000',
+        investment_properties_value: '450000',
+        total_real_estate_debt: '350000',
+        previous_startup_exits: '1500000',
+        current_business_equity_value: '2500000',
+        intellectual_property_value: '600000',
+        business_assets_description: '3 granted medical patents & ECG algorithm copyright',
+        personal_debt: '15000',
+        monthly_personal_expenses: '9000',
+        dependents_count: '1',
+        personal_funds_committed_to_startup: '250000',
+        previous_funding_raised: '1200000',
+        investor_connections: 'Khosla Ventures, NEA Medtech network, Rock Health angels',
+        board_memberships: 'BioPulse Board, American Heart Association Digital Advisory',
+        industry_experience_years: '15',
+        previous_companies: 'Ex-Director of Biomedical Engineering at Medtronic',
+        professional_network_value: 'Direct connections with Chief Medical Officers across top 50 US hospital systems',
+        advisory_roles: 'Advisory Board Member at Digital Health Accelerator',
+        insurance_coverage_amount: '3000000',
+        retirement_savings: '320000',
+        emergency_fund_months: '12',
+        risk_tolerance: 'medium',
+      }
+    },
+    {
+      name: 'NutriCraft Organics (Food & Beverage)',
+      basicData: {
+        startup_name: 'NutriCraft Organics',
+        industry: 'food',
+        stage: 'pre-seed',
+        description: 'Plant-based functional protein beverages with zero artificial preservatives and smart shelf-life technology.',
+        team_size: '8',
+        founded_year: '2024',
+        website: 'https://nutricraft.io',
+      },
+      extendedData: {
+        headquarters: 'Austin, TX',
+        legal_entity_name: 'NutriCraft Foods Inc.',
+        incorporation_country: 'United States',
+        contact_email: 'hello@nutricraft.io',
+        contact_phone: '+15125550199',
+        revenue_current_year: '180000',
+        monthly_burn: '15000',
+        runway_months: '14',
+        funding_ask: '1000000',
+        funding_use: '40% Retail Distribution Expansion, 35% Copacker Scaling, 25% Marketing',
+      },
+      domainData: {
+        regulatory_approvals: 'FDA registered facility',
+        clinical_stage: 'N/A',
+        target_patient_population: 'N/A',
+        reimbursement_strategy: 'N/A',
+        clinical_partners: 'N/A',
+        estimated_time_to_market_months: '0',
+        licencing_requirements: 'State Health Department Food Processor License',
+        payments_volume_30d: '15000',
+        kyc_process: 'N/A',
+        principal_markets: 'US Southwest & West Coast',
+        integrations: 'Shopify, UNFI, KeHE Distribution',
+        suppliers: 'Organic Valley Co-Op, Pacific Coast Ingredients, EcoPack Solutions',
+        supply_chain_risks: 'Seasonal ingredient price variance & cold-chain distribution logistics',
+        perishability_days: '90',
+        food_safety_certifications: 'USDA Organic, Non-GMO Project Verified, HACCP Certified, SQF Level 3',
+        gross_margin_percent: '58',
+        primary_channels: 'Whole Foods Market, Sprouts, Direct E-commerce',
+        average_order_value: '42',
+        monthly_active_buyers: '4500',
+        fulfillment_strategy: 'Cold-chain 3PL Distribution',
+        return_rate_percent: '1.2',
+      },
+      founderAssetsData: {
+        personal_net_worth: '480000',
+        liquid_assets: '80000',
+        personal_annual_income: '110000',
+        credit_score: '740',
+        stock_investments: '35000',
+        crypto_investments: '15000',
+        real_estate_investments: '180000',
+        other_investments: '20000',
+        primary_residence_value: '450000',
+        investment_properties_value: '0',
+        total_real_estate_debt: '280000',
+        previous_startup_exits: '0',
+        current_business_equity_value: '600000',
+        intellectual_property_value: '80000',
+        business_assets_description: 'Proprietary cold-brew extraction process & trade secret formulation',
+        personal_debt: '12000',
+        monthly_personal_expenses: '5500',
+        dependents_count: '0',
+        personal_funds_committed_to_startup: '80000',
+        previous_funding_raised: '150000',
+        investor_connections: 'FoodBytes by Rabobank, CPG Angel Network, SKU Accelerator',
+        board_memberships: 'NutriCraft Board',
+        industry_experience_years: '8',
+        previous_companies: 'Former Brand Manager at Whole Foods & RXBAR',
+        professional_network_value: 'WFM brokers, Target buyers, and regional distributors in Southwest',
+        advisory_roles: 'Mentor at Local Food Incubator',
+        insurance_coverage_amount: '1000000',
+        retirement_savings: '90000',
+        emergency_fund_months: '6',
+        risk_tolerance: 'high',
+      }
+    },
+    {
+      name: 'StyleSphere Commerce (E-Commerce)',
+      basicData: {
+        startup_name: 'StyleSphere Commerce',
+        industry: 'ecommerce',
+        stage: 'seed',
+        description: 'AI virtual try-on and personalized fashion recommendation marketplace connecting sustainable brands with Gen-Z buyers.',
+        team_size: '15',
+        founded_year: '2023',
+        website: 'https://stylesphere.com',
+      },
+      extendedData: {
+        headquarters: 'New York, NY',
+        legal_entity_name: 'StyleSphere Inc.',
+        incorporation_country: 'United States',
+        contact_email: 'founders@stylesphere.com',
+        contact_phone: '+12125550144',
+        revenue_current_year: '850000',
+        monthly_burn: '38000',
+        runway_months: '16',
+        funding_ask: '3000000',
+        funding_use: '40% Creator Economy Partnerships, 35% Computer Vision R&D, 25% Inventory Tech',
+      },
+      domainData: {
+        regulatory_approvals: 'N/A',
+        clinical_stage: 'N/A',
+        target_patient_population: 'N/A',
+        reimbursement_strategy: 'N/A',
+        clinical_partners: 'N/A',
+        estimated_time_to_market_months: '0',
+        licencing_requirements: 'Standard state retail permits',
+        payments_volume_30d: '75000',
+        kyc_process: 'Merchant verification & buyer fraud protection',
+        principal_markets: 'US, UK, Canada',
+        integrations: 'Shopify Plus, WooCommerce, Instagram Shop API, TikTok Shop API',
+        suppliers: '50+ Verified Sustainable Apparel Brands',
+        supply_chain_risks: 'Holiday seasonal logistics backlog',
+        perishability_days: 'N/A',
+        food_safety_certifications: 'N/A',
+        gross_margin_percent: '45',
+        primary_channels: 'Shopify App Storefront, iOS/Android Mobile Apps, Instagram & TikTok Shops',
+        average_order_value: '115',
+        monthly_active_buyers: '28500',
+        fulfillment_strategy: 'Distributed 3PL node fulfillment with same-day NYC delivery',
+        return_rate_percent: '3.1',
+      },
+      founderAssetsData: {
+        personal_net_worth: '920000',
+        liquid_assets: '210000',
+        personal_annual_income: '185000',
+        credit_score: '795',
+        stock_investments: '110000',
+        crypto_investments: '45000',
+        real_estate_investments: '300000',
+        other_investments: '35000',
+        primary_residence_value: '720000',
+        investment_properties_value: '250000',
+        total_real_estate_debt: '380000',
+        previous_startup_exits: '750000',
+        current_business_equity_value: '1800000',
+        intellectual_property_value: '350000',
+        business_assets_description: 'Patent-pending 3D human body mesh rendering pipeline & computer vision models',
+        personal_debt: '18000',
+        monthly_personal_expenses: '6800',
+        dependents_count: '1',
+        personal_funds_committed_to_startup: '175000',
+        previous_funding_raised: '750000',
+        investor_connections: 'Forerunner Ventures, Commerce Ventures, LVMH Innovation Award network',
+        board_memberships: 'StyleSphere Inc.',
+        industry_experience_years: '10',
+        previous_companies: 'Ex-Product Lead at Farfetch & Senior AI Engineer at Glossier',
+        professional_network_value: 'Extensive fashion retail CTO and luxury brand executive network',
+        advisory_roles: 'E-commerce Advisor at Techstars NYC',
+        insurance_coverage_amount: '2500000',
+        retirement_savings: '210000',
+        emergency_fund_months: '9',
+        risk_tolerance: 'medium',
+      }
+    }
+  ];
+
+  const handleAutoFill = () => {
+    const preset = autoFillPresets[autoFillIndex % autoFillPresets.length];
+    
+    setBasicData(preset.basicData);
+    setExtendedData(preset.extendedData);
+    setDomainData(preset.domainData);
+    setFounderAssetsData(preset.founderAssetsData);
+    
+    setAutoFillIndex(prev => prev + 1);
+
+    toast({
+      title: `⚡ Loaded Sample (${(autoFillIndex % autoFillPresets.length) + 1}/${autoFillPresets.length}): ${preset.name}`,
+      description: 'Form filled only (not submitted). Click again for next domain sample!',
+    });
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -781,15 +1118,12 @@ const CompleteProfile = () => {
         </div>
       );
     }
-
-    const industryForms = {
-      'Healthcare': renderHealthcareForm,
-      'Fintech': renderFintechForm,
-      'Food & Beverage': renderFoodForm,
-      'E-commerce': renderEcommerceForm,
-    };
-
-    const currentForm = industryForms[basicData.industry as keyof typeof industryForms];
+    const ind = (basicData.industry || '').toLowerCase();
+    let currentForm = renderFintechForm;
+    if (ind.includes('health')) currentForm = renderHealthcareForm;
+    else if (ind.includes('fintech')) currentForm = renderFintechForm;
+    else if (ind.includes('food')) currentForm = renderFoodForm;
+    else if (ind.includes('ecom') || ind.includes('commerce')) currentForm = renderEcommerceForm;
     
     return (
       <div className="space-y-6">
@@ -1197,7 +1531,7 @@ const CompleteProfile = () => {
       <div className="max-w-4xl mx-auto">
         <Card className="border-primary/20 shadow-glow-sm">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl">Complete Your Startup Profile</CardTitle>
                 <CardDescription>
@@ -1209,16 +1543,28 @@ const CompleteProfile = () => {
                   }
                 </CardDescription>
               </div>
-              <div className="flex space-x-2">
-                {Array.from({ length: totalSteps }, (_, i) => (
-                  <div
-                    key={i}
-                    className={`w-3 h-3 rounded-full ${
-                      i + 1 < currentStep ? 'bg-primary' : 
-                      i + 1 === currentStep ? 'bg-primary/50' : 'bg-muted'
-                    }`}
-                  />
-                ))}
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAutoFill}
+                  className="flex items-center gap-1.5 border-primary/40 text-primary hover:bg-primary/10 transition-all shadow-sm font-medium"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
+                  <span>Auto-Fill Demo Data</span>
+                </Button>
+                <div className="flex space-x-1.5">
+                  {Array.from({ length: totalSteps }, (_, i) => (
+                    <div
+                      key={i}
+                      className={`w-3 h-3 rounded-full ${
+                        i + 1 < currentStep ? 'bg-primary' : 
+                        i + 1 === currentStep ? 'bg-primary/50' : 'bg-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -1229,7 +1575,7 @@ const CompleteProfile = () => {
               {currentStep === 3 && renderStep3()}
               {currentStep === 4 && renderStep4()}
 
-              <div className="flex justify-between pt-6">
+              <div className="flex items-center justify-between gap-3 pt-6 border-t border-border/50">
                 <Button
                   type="button"
                   variant="outline"
@@ -1255,7 +1601,7 @@ const CompleteProfile = () => {
                   <Button
                     type="submit"
                     disabled={loading || !isStepValid(1)}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-primary text-white hover:from-emerald-700 hover:to-primary/90 shadow-md font-semibold px-6"
                   >
                     {loading ? (
                       <>
@@ -1264,8 +1610,8 @@ const CompleteProfile = () => {
                       </>
                     ) : (
                       <>
-                        <Check className="w-4 h-4" />
-                        Submit Profile
+                        <Check className="w-5 h-5" />
+                        Submit & Create Profile
                       </>
                     )}
                   </Button>

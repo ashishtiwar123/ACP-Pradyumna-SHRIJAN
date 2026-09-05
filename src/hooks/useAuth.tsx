@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, username?: string, fullName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, role?: string, fullName?: string) => Promise<{ data: any; error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
-  signUp: async () => ({ error: null }),
+  signUp: async () => ({ data: null, error: null }),
   signIn: async () => ({ error: null }),
   signOut: async () => {},
 });
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, username?: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, role?: string, fullName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { data, error } = await supabase.auth.signUp({
@@ -66,14 +66,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          username,
+          role: role || 'founder',
           full_name: fullName,
         }
       }
     });
-    
-    // Profile creation is handled automatically by database trigger
-    // No need to manually create profile here
+
+    if (data?.user && !error) {
+      await supabase.from('profiles').upsert({
+        id: data.user.id,
+        email: data.user.email,
+        role: role || 'founder',
+      });
+    }
     
     return { data, error };
   };
