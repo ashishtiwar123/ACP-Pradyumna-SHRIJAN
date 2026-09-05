@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Loader2, Building2, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import type { UserRole } from '@/contexts/AuthContext';
+
+type UserRole = 'founder' | 'investor';
 
 const authSchema = z.object({
   email: z.string().trim().email({ message: "Invalid email address" }).max(255),
@@ -21,7 +23,11 @@ const signUpSchema = authSchema.extend({
 });
 
 const Auth = () => {
-  const { user, loading, signUp, signIn, profile, isFounder, isInvestor } = useAuth();
+  const { user, loading, signUp, signIn } = useAuth();
+  const { profile } = useProfile();
+  
+  const isFounder = profile?.role === 'founder';
+  const isInvestor = profile?.role === 'investor';
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
@@ -162,7 +168,7 @@ const Auth = () => {
             
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="role">I am a</Label>
+                <Label htmlFor="role">Role</Label>
                 <Select
                   value={formData.role}
                   onValueChange={(value: UserRole) => setFormData({ ...formData, role: value })}

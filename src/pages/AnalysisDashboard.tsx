@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, AlertTriangle, CheckCircle2, TrendingUp, Users, Target, ArrowLeft, Loader2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AnalysisData {
   id: string;
@@ -267,11 +267,11 @@ const AnalysisDashboard = () => {
               </Button>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  <h1 className="text-2xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                     {analysis.startup_name || 'Startup Analysis'}
                   </h1>
                   {(analysisId?.startsWith('default-demo') || sessionStorage.getItem('is_default_data') === 'true') && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="hidden md:block text-xs">
                       Demo Data
                     </Badge>
                   )}
@@ -285,18 +285,7 @@ const AnalysisDashboard = () => {
                 Export PDF
               </Button>
               <div className="flex gap-2">
-                {(analysisId?.startsWith('default-demo') || sessionStorage.getItem('is_default_data') === 'true') && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      sessionStorage.removeItem('is_default_data');
-                      sessionStorage.removeItem('latest_analysis');
-                      navigate("/upload");
-                    }}
-                  >
-                    Try Real Analysis
-                  </Button>
-                )}
+                
                 <Button onClick={() => navigate("/upload")} className="bg-gradient-primary">
                   New Analysis
                 </Button>

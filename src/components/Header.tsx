@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
@@ -17,10 +18,14 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 const Header = () => {
-  const { user, signOut, isFounder, isInvestor } = useAuth();
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const isFounder = profile?.role === 'founder';
+  const isInvestor = profile?.role === 'investor';
 
   // Dynamic navigation based on user role
   const getNavigationLinks = () => {
@@ -32,7 +37,7 @@ const Header = () => {
       },
     ];
 
-    if (user) {
+    if (user && profile) {
       if (isFounder) {
         baseLinks.push({
           name: 'Dashboard',
@@ -120,7 +125,7 @@ const Header = () => {
           <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
             <User className="h-4 w-4" />
             <span className="max-w-[150px] truncate">
-              {user.email}
+              {profile?.full_name || user.email}
             </span>
           </div>
           <Button

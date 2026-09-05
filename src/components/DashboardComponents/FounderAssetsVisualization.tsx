@@ -349,15 +349,15 @@ export const FounderAssetsVisualization: React.FC<FounderAssetsProps> = ({ dashb
           <CardContent className="space-y-4">
             {founder_assets.business_assets_description && (
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">Business Assets Description</p>
-                <p className="text-sm bg-gray-50 p-3 rounded-lg">{founder_assets.business_assets_description}</p>
+                <p className="text-sm font-medium text-gray-400 mb-2">Business Assets Description</p>
+                <p className="text-sm border-2 p-3 rounded-lg">{founder_assets.business_assets_description}</p>
               </div>
             )}
             
             {founder_assets.professional_network_value && (
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">Professional Network Value</p>
-                <p className="text-sm bg-gray-50 p-3 rounded-lg">{founder_assets.professional_network_value}</p>
+                <p className="text-sm font-medium text-gray-400 mb-2">Professional Network Value</p>
+                <p className="text-sm border-2 p-3 rounded-lg">{founder_assets.professional_network_value}</p>
               </div>
             )}
           </CardContent>

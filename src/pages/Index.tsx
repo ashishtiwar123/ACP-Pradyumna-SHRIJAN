@@ -1,12 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Brain, FileText, AlertTriangle, Zap, LineChart, MessageSquare } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, isFounder, isInvestor } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  
+  const isFounder = profile?.role === 'founder';
+  const isInvestor = profile?.role === 'investor';
   const features = [
     {
       icon: Brain,
@@ -59,7 +64,7 @@ const Index = () => {
                 className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg px-8 py-6"
                 onClick={() => {
                   if (!user) {
-                    navigate('/auth');
+                    navigate('/login');
                   } else if (isInvestor) {
                     navigate('/upload');
                   } else if (isFounder) {
@@ -125,7 +130,7 @@ const Index = () => {
               className="text-lg px-8 py-6 animate-glow"
               onClick={() => {
                 if (!user) {
-                  navigate('/auth');
+                  navigate('/login');
                 } else if (isInvestor) {
                   navigate('/upload');
                 } else if (isFounder) {
