@@ -57,8 +57,10 @@ const AnalysisDashboard = () => {
     const sessionData = sessionStorage.getItem('latest_analysis');
     if (sessionData) {
       const data = JSON.parse(sessionData);
-      if (data.analysis_results) {
-        setAnalysis(data.analysis_results);
+      // Check for analysis_results in the expected structure
+      const analysisResults = data.expected_outputs?.result?.analysis_results || data.result?.analysis_results || data.analysis_results;
+      if (analysisResults) {
+        setAnalysis(analysisResults);
         setLoading(false);
         return;
       }

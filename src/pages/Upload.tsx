@@ -39,20 +39,9 @@ const UploadPage = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      const allowedTypes = [
-        "application/pdf",
-        "application/vnd.ms-powerpoint",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      ];
       
-      if (allowedTypes.includes(selectedFile.type) || selectedFile.type.includes("presentation")) {
-        setFile(selectedFile);
-        toast.success("File uploaded successfully!");
-      } else {
-        toast.error("Please upload a PDF, PowerPoint, or Excel file");
-      }
+      setFile(selectedFile);
+      toast.success("File uploaded successfully!");
     }
   };
 
@@ -122,30 +111,33 @@ const UploadPage = () => {
       const analysisResults = result.expected_outputs?.result?.analysis_results || result.result?.analysis_results;
       
       if (analysisResults) {
+        // Normalize string numbers to actual numbers recursively
+        const normalizedResults = normalizeTypesDeep(analysisResults);
+        
         // Create a clean results object with only the fields that exist in the schema
         const resultsForInsert = {
           user_id: user.id,
-          executive_summary: analysisResults.executive_summary || null,
-          slide_insights: analysisResults.slide_insights || null,
-          red_flags: analysisResults.red_flags || null,
-          key_metrics: analysisResults.key_metrics || {},
-          overall_score: analysisResults.overall_score ? Number(analysisResults.overall_score) : null,
-          startup_name: analysisResults.startup_name || null,
-          financial_health_score: analysisResults.financial_health_score ? Number(analysisResults.financial_health_score) : null,
-          growth_potential_score: analysisResults.growth_potential_score ? Number(analysisResults.growth_potential_score) : null,
-          risk_assessment_score: analysisResults.risk_assessment_score ? Number(analysisResults.risk_assessment_score) : null,
-          current_revenue: analysisResults.current_revenue ? Number(analysisResults.current_revenue) : 0,
-          monthly_burn: analysisResults.monthly_burn ? Number(analysisResults.monthly_burn) : 0,
-          runway_months: analysisResults.runway_months ? Number(analysisResults.runway_months) : 0,
-          team_size: analysisResults.team_size ? Number(analysisResults.team_size) : 0,
-          funding_ask: analysisResults.funding_ask ? Number(analysisResults.funding_ask) : 0,
-          funding_probability_score: analysisResults.funding_probability_score ? Number(analysisResults.funding_probability_score) : null,
-          business_overview: analysisResults.business_overview || null,
-          funding_details: analysisResults.funding_details || null,
-          investment_recommendation: analysisResults.investment_recommendation || null,
-          comparable_companies: analysisResults.comparable_companies || null,
-          market_analysis: analysisResults.market_analysis || null,
-          status: analysisResults.status || 'completed',
+          executive_summary: normalizedResults.executive_summary || null,
+          slide_insights: normalizedResults.slide_insights || null,
+          red_flags: normalizedResults.red_flags || null,
+          key_metrics: normalizedResults.key_metrics || {},
+          overall_score: normalizedResults.overall_score || null,
+          startup_name: normalizedResults.startup_name || null,
+          financial_health_score: normalizedResults.financial_health_score || null,
+          growth_potential_score: normalizedResults.growth_potential_score || null,
+          risk_assessment_score: normalizedResults.risk_assessment_score || null,
+          current_revenue: normalizedResults.current_revenue || 0,
+          monthly_burn: normalizedResults.monthly_burn || 0,
+          runway_months: normalizedResults.runway_months || 0,
+          team_size: normalizedResults.team_size || 0,
+          funding_ask: normalizedResults.funding_ask || 0,
+          funding_probability_score: normalizedResults.funding_probability_score || null,
+          business_overview: normalizedResults.business_overview || null,
+          funding_details: normalizedResults.funding_details || null,
+          investment_recommendation: normalizedResults.investment_recommendation || null,
+          comparable_companies: normalizedResults.comparable_companies || null,
+          market_analysis: normalizedResults.market_analysis || null,
+          status: normalizedResults.status || 'completed',
         };
         
         console.log('Inserting analysis results:', resultsForInsert);
@@ -170,20 +162,23 @@ const UploadPage = () => {
       const analysisLogs = result.expected_outputs?.result?.analysis_logs || result.result?.analysis_logs;
       
       if (analysisLogs) {
+        // Normalize string numbers to actual numbers recursively
+        const normalizedLogs = normalizeTypesDeep(analysisLogs);
+        
         // Create a completely clean logs object - ensure no unwanted fields
         const cleanLogsData = {
           user_id: user.id,
-          startup_profile_id: analysisLogs.startup_profile_id || null,
-          model_used: analysisLogs.model_used || 'local-ai',
-          request_summary: analysisLogs.request_summary || null,
-          response_summary: analysisLogs.response_summary || null,
-          startup_name: analysisLogs.startup_name || null,
-          overall_score: analysisLogs.overall_score ? Number(analysisLogs.overall_score) : null,
-          analysis_type: analysisLogs.analysis_type || 'pitch_deck',
-          status: analysisLogs.status || 'completed',
+          startup_profile_id: normalizedLogs.startup_profile_id || null,
+          model_used: normalizedLogs.model_used || 'local-ai',
+          request_summary: normalizedLogs.request_summary || null,
+          response_summary: normalizedLogs.response_summary || null,
+          startup_name: normalizedLogs.startup_name || null,
+          overall_score: normalizedLogs.overall_score || null,
+          analysis_type: normalizedLogs.analysis_type || 'pitch_deck',
+          status: normalizedLogs.status || 'completed',
           file_name: file.name,
           analysis_result_id: analysisResultId,
-          processing_time_seconds: analysisLogs.processing_time_seconds ? Number(analysisLogs.processing_time_seconds) : null,
+          processing_time_seconds: normalizedLogs.processing_time_seconds || null,
         };
         
         console.log('Inserting analysis logs:', cleanLogsData);
@@ -211,9 +206,13 @@ const UploadPage = () => {
       sessionStorage.setItem('latest_analysis', JSON.stringify(result));
       sessionStorage.setItem('latest_analysis_id', analysisResultId || '');
       
-      // Navigate to analysis dashboard
+      // Navigate to analysis dashboard with the specific analysis ID
       setTimeout(() => {
-        navigate('/analysis-dashboard');
+        if (analysisResultId) {
+          navigate(`/analysis-dashboard/${analysisResultId}`);
+        } else {
+          navigate('/analysis-dashboard');
+        }
       }, 1500);
 
     } catch (error) {
@@ -314,7 +313,7 @@ const UploadPage = () => {
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".pdf,.ppt,.pptx,.xls,.xlsx"
+                // accept=".pdf,.ppt,.pptx,.xls,.xlsx"
                 onChange={handleFileChange}
               />
               <label htmlFor="file-upload" className="cursor-pointer">
