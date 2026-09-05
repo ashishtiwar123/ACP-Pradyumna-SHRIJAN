@@ -127,6 +127,7 @@ const Auth = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md border-primary/20 shadow-glow-sm">
         <CardHeader className="text-center space-y-2">
+          <img src="/logo.png" alt="VentureSight Logo" className="h-12 w-auto mx-auto object-contain mb-1" />
           <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </CardTitle>
