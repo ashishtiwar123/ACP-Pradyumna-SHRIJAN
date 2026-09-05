@@ -244,6 +244,57 @@ export class DataFetchingService {
       if (!domainDetails) {
         console.log(`🔍 Domain details are null, running debug check...`);
         await this.debugDomainDetailsAvailability(startupProfile.id, domainType);
+        // Provide default domain details based on domain type
+        let defaultDomainDetails: any = null;
+        switch (domainType) {
+          case 'fintech':
+            defaultDomainDetails = {
+              startup_profile_id: startupProfile.id,
+              licencing_requirements: '',
+              payments_volume_30d: 0,
+              kyc_process: '',
+              principal_markets: '',
+              integrations: '',
+              created_at: new Date().toISOString()
+            };
+            break;
+          case 'healthcare':
+            defaultDomainDetails = {
+              startup_profile_id: startupProfile.id,
+              regulatory_stage: '',
+              clinical_stage: '',
+              reimbursement_strategy: '',
+              clinical_partners: '',
+              created_at: new Date().toISOString()
+            };
+            break;
+          case 'food':
+            defaultDomainDetails = {
+              startup_profile_id: startupProfile.id,
+              certifications: '',
+              distribution_channels: '',
+              production_capacity: 0,
+              created_at: new Date().toISOString()
+            };
+            break;
+          case 'ecommerce':
+            defaultDomainDetails = {
+              startup_profile_id: startupProfile.id,
+              platform_type: '',
+              active_sellers: 0,
+              monthly_gmv: 0,
+              logistics_partners: '',
+              created_at: new Date().toISOString()
+            };
+            break;
+        }
+        // Use default domain details if not fetched
+        return {
+          startup_profile: startupProfile,
+          founder_assets: founderAssets,
+          domain_details: defaultDomainDetails,
+          domain_type: domainType
+        };
       }
 
       const dashboardData: DashboardData = {
