@@ -1,9 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 import { Brain, FileText, AlertTriangle, Zap, LineChart, MessageSquare } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const features = [
     {
       icon: Brain,
@@ -51,16 +54,23 @@ const Index = () => {
               Transform pitch decks into investor-ready memos with AI-driven insights, red flag detection, and instant feedback.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/upload">
-                <Button size="lg" className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg px-8 py-6">
-                  Analyze Your Deck
+              <Button 
+                size="lg" 
+                className="bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg px-8 py-6"
+                onClick={() => navigate(user ? '/upload' : '/auth')}
+              >
+                {user ? 'Analyze Your Deck' : 'Get Started'}
+              </Button>
+              {user && (
+                <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  className="text-lg px-8 py-6"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  View Dashboard
                 </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-                  View Sample Analysis
-                </Button>
-              </Link>
+              )}
             </div>
           </div>
         </div>
@@ -101,11 +111,14 @@ const Index = () => {
             <p className="text-xl text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
               Upload your pitch deck and get AI-powered insights in minutes. No credit card required.
             </p>
-            <Link to="/upload">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-6 animate-glow">
-                Get Started Now
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="text-lg px-8 py-6 animate-glow"
+              onClick={() => navigate(user ? '/upload' : '/auth')}
+            >
+              Get Started Now
+            </Button>
           </CardContent>
         </Card>
       </section>
