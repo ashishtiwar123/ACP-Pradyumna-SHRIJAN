@@ -53,10 +53,25 @@ const Index = () => {
       <section className="relative overflow-hidden min-h-screen flex items-center">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
-        
+
+        {/* Floating Elements - Spread Across Hero Section */}
+        <div className="pointer-events-none select-none">
+          {/* Top Left */}
+          <div className="absolute top-8 left-8 w-12 h-12 bg-gradient-primary rounded-full opacity-70 animate-bounce" style={{animationDelay: '0.2s'}} />
+          {/* Top Right */}
+          <div className="absolute top-16 right-16 w-8 h-8 bg-gradient-primary rounded-full opacity-60 animate-bounce" style={{animationDelay: '1.2s'}} />
+          {/* Center Left */}
+          <div className="absolute top-1/2 left-0 w-6 h-6 bg-gradient-primary rounded-full opacity-50 animate-bounce" style={{animationDelay: '2.1s'}} />
+          {/* Center Right */}
+          <div className="absolute top-1/3 right-0 w-10 h-10 bg-gradient-primary rounded-full opacity-60 animate-bounce" style={{animationDelay: '1.7s'}} />
+          {/* Bottom Left */}
+          <div className="absolute bottom-12 left-20 w-7 h-7 bg-gradient-primary rounded-full opacity-70 animate-bounce" style={{animationDelay: '0.8s'}} />
+          {/* Bottom Right */}
+          <div className="absolute bottom-8 right-8 w-9 h-9 bg-gradient-primary rounded-full opacity-80 animate-bounce" style={{animationDelay: '2.5s'}} />
+        </div>
+
         {/* Main Content Container */}
-        <div className="bg-black relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
-          
+        <div className=" relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Text Content */}
           <div className="animate-fade-in space-y-8">
             <div className="space-y-6">
@@ -128,16 +143,13 @@ const Index = () => {
             <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] xl:h-[700px] w-full">
               {/* Glow Effect Background */}
               <div className="absolute inset-0 bg-gradient-radial from-primary/20 via-transparent to-transparent rounded-full blur-3xl" />
-              
               {/* 3D Model Container */}
-              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-gradient-to-br from-card/50 to-background/30 backdrop-blur-sm">
-                <Spline scene="https://prod.spline.design/32qv2birAJW4tCjP/scene.splinecode" />
+              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-card/50 to-background/30 backdrop-blur-sm">
+                <Spline
+                  scene="https://prod.spline.design/32qv2birAJW4tCjP/scene.splinecode"
+                />
               </div>
-              
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-gradient-primary rounded-full opacity-80 animate-bounce" style={{animationDelay: '0s'}} />
-              <div className="absolute -bottom-6 -left-6 w-6 h-6 bg-gradient-primary rounded-full opacity-60 animate-bounce" style={{animationDelay: '1s'}} />
-              <div className="absolute top-1/4 -left-3 w-4 h-4 bg-gradient-primary rounded-full opacity-70 animate-bounce" style={{animationDelay: '2s'}} />
+              <div className="absolute w-2/5 h-10 bg-background right-0 bottom-5" />
             </div>
           </div>
         </div>
