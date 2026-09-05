@@ -55,7 +55,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
         
         {/* Main Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="bg-black relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
           
           {/* Left Side - Text Content */}
           <div className="animate-fade-in space-y-8">

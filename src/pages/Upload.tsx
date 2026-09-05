@@ -169,8 +169,8 @@ const UploadPage = () => {
       if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
         const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
         
-        // Create a clean logs object with only the fields that exist in the schema
-        const logsForInsert = {
+        // Create a completely clean logs object - ensure no unwanted fields
+        const cleanLogsData = {
           user_id: user.id,
           startup_profile_id: analysisLogs.startup_profile_id || null,
           model_used: analysisLogs.model_used || 'local-ai',
@@ -185,17 +185,25 @@ const UploadPage = () => {
           processing_time_seconds: analysisLogs.processing_time_seconds ? Number(analysisLogs.processing_time_seconds) : null,
         };
         
-        console.log('Inserting analysis logs:', logsForInsert);
+        // Extra safety: explicitly remove any id or created_at fields
+        delete (cleanLogsData as any).id;
+        delete (cleanLogsData as any).created_at;
         
-        const { error: analysisLogError } = await supabase
+        console.log('Inserting analysis logs:', cleanLogsData);
+        
+        const { data: analysisLogRow, error: analysisLogError } = await supabase
           .from('analysis_logs')
-          .insert([logsForInsert]);
+          .insert([cleanLogsData])
+          .select()
+          .single();
           
         if (analysisLogError) {
           console.error('Analysis logs insert error:', analysisLogError);
+          console.error('Data being inserted:', cleanLogsData);
+          console.error('Original AI logs data:', analysisLogs);
           // Don't throw error for logs, just log it
         } else {
-          console.log('Analysis logs saved successfully');
+          console.log('Analysis logs saved successfully:', analysisLogRow);
         }
       }
 
