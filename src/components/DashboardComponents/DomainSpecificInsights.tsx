@@ -43,6 +43,11 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
     );
   }
 
+  // Parse actual data from healthcare details
+  const regulatoryApprovals = healthcareDetails.regulatory_approvals?.split(',') || [];
+  const clinicalPartners = healthcareDetails.clinical_partners?.split(',') || [];
+  const timeToMarket = healthcareDetails.estimated_time_to_market_months || 0;
+
   // Sample data for healthcare charts
   const clinicalProgressData = [
     { phase: 'Research', progress: 100, months: 6 },
@@ -82,7 +87,9 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Time to Market</p>
-                <p className="text-2xl font-bold">{healthcareDetails.estimated_time_to_market || 'TBD'}</p>
+                <p className="text-2xl font-bold">
+                  {timeToMarket ? `${timeToMarket} months` : 'TBD'}
+                </p>
               </div>
               <Clock className="w-8 h-8 text-success" />
             </div>
@@ -93,8 +100,8 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Key Partners</p>
-                <p className="text-2xl font-bold">{healthcareDetails.key_partners?.split(',').length || 0}</p>
+                <p className="text-sm text-muted-foreground">Clinical Partners</p>
+                <p className="text-2xl font-bold">{clinicalPartners.length}</p>
               </div>
               <Users className="w-8 h-8 text-primary" />
             </div>
@@ -102,25 +109,68 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
         </Card>
       </div>
 
-      {/* Regulatory Progress */}
+      {/* Target Patient Population */}
+      {healthcareDetails.target_patient_population && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Target className="w-5 h-5 mr-2 text-primary" />
+              Target Patient Population
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              {healthcareDetails.target_patient_population}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Regulatory Approvals */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Shield className="w-5 h-5 mr-2 text-primary" />
-            Regulatory Compliance Progress
+            Regulatory Approvals & Compliance
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {healthcareDetails.regulatory_requirements?.split(',').map((req: string, index: number) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm">{req.trim()}</span>
-                <Badge variant="secondary">In Progress</Badge>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {regulatoryApprovals.length > 0 ? (
+              regulatoryApprovals.map((approval, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-success" />
+                    <span className="text-sm font-medium">{approval.trim()}</span>
+                  </div>
+                  <Badge variant="secondary">Active</Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No regulatory approvals specified</p>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Reimbursement Strategy */}
+      {healthcareDetails.reimbursement_strategy && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-success" />
+              Reimbursement Strategy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+              <p className="text-blue-800 dark:text-blue-200">
+                {healthcareDetails.reimbursement_strategy}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -135,20 +185,51 @@ const HealthcareInsights: React.FC<DomainInsightsProps> = ({ dashboardData, anal
 
         <Card>
           <CardHeader>
-            <CardTitle>Partnership Network</CardTitle>
+            <CardTitle>Clinical Partnership Network</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {healthcareDetails.key_partners?.split(',').slice(0, 5).map((partner: string, index: number) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <span className="font-medium">{partner.trim()}</span>
-                  <Badge variant="outline">Active</Badge>
-                </div>
-              ))}
+              {clinicalPartners.length > 0 ? (
+                clinicalPartners.slice(0, 5).map((partner, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span className="font-medium">{partner.trim()}</span>
+                    <Badge variant="outline">Active</Badge>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No clinical partners specified</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Key Healthcare Metrics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Healthcare Development Metrics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">{healthcareDetails.clinical_stage || 'N/A'}</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">Clinical Stage</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">{timeToMarket || 'TBD'}</p>
+              <p className="text-sm text-green-700 dark:text-green-300">Months to Market</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">{regulatoryApprovals.length}</p>
+              <p className="text-sm text-purple-700 dark:text-purple-300">Regulatory Approvals</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-orange-600">{clinicalPartners.length}</p>
+              <p className="text-sm text-orange-700 dark:text-orange-300">Clinical Partners</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -168,23 +249,27 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
     );
   }
 
-  // Sample data for fintech charts
+  // Parse the actual data structure from your API
+  const paymentsVolume = parseInt(fintechDetails.payments_volume_30d) || 0;
+  const principalMarkets = fintechDetails.principal_markets?.split(',') || [];
+  const integrations = fintechDetails.integrations?.split(',') || [];
+  const licenseRequirements = fintechDetails.licencing_requirements?.split(',') || [];
+
+  // Sample data for fintech charts based on actual payment volume
   const paymentVolumeData = [
-    { month: 'Jan', volume: 50000, transactions: 1200 },
-    { month: 'Feb', volume: 65000, transactions: 1450 },
-    { month: 'Mar', volume: 78000, transactions: 1680 },
-    { month: 'Apr', volume: 85000, transactions: 1820 },
-    { month: 'May', volume: 92000, transactions: 1950 },
-    { month: 'Jun', volume: 108000, transactions: 2200 }
+    { month: 'Jan', volume: paymentsVolume * 0.7, transactions: Math.floor(paymentsVolume / 20000) },
+    { month: 'Feb', volume: paymentsVolume * 0.8, transactions: Math.floor(paymentsVolume / 18000) },
+    { month: 'Mar', volume: paymentsVolume * 0.9, transactions: Math.floor(paymentsVolume / 16000) },
+    { month: 'Apr', volume: paymentsVolume * 0.85, transactions: Math.floor(paymentsVolume / 17000) },
+    { month: 'May', volume: paymentsVolume * 0.95, transactions: Math.floor(paymentsVolume / 15000) },
+    { month: 'Jun', volume: paymentsVolume, transactions: Math.floor(paymentsVolume / 14000) }
   ];
 
-  const marketCoverageData = [
-    { region: 'North America', coverage: 85 },
-    { region: 'Europe', coverage: 60 },
-    { region: 'Asia Pacific', coverage: 30 },
-    { region: 'Latin America', coverage: 15 },
-    { region: 'Africa', coverage: 5 }
-  ];
+  // Market coverage based on principal markets
+  const marketCoverageData = principalMarkets.map((market, index) => ({
+    region: market.trim(),
+    coverage: Math.max(20, 100 - index * 25) // Decreasing coverage for demo
+  }));
 
   return (
     <div className="space-y-6">
@@ -194,9 +279,12 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Monthly Payment Volume</p>
+                <p className="text-sm text-muted-foreground">30-Day Payment Volume</p>
                 <p className="text-2xl font-bold">
-                  ${fintechDetails.monthly_payment_volume?.toLocaleString() || '0'}
+                  ₹{(paymentsVolume / 1000000).toFixed(1)}M
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  ${(paymentsVolume / 83 / 1000000).toFixed(1)}M USD
                 </p>
               </div>
               <CreditCard className="w-8 h-8 text-success" />
@@ -209,7 +297,10 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Active Markets</p>
-                <p className="text-2xl font-bold">{fintechDetails.target_markets?.split(',').length || 0}</p>
+                <p className="text-2xl font-bold">{principalMarkets.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  {principalMarkets.slice(0, 2).join(', ')}
+                </p>
               </div>
               <MapPin className="w-8 h-8 text-primary" />
             </div>
@@ -221,7 +312,10 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Integration Partners</p>
-                <p className="text-2xl font-bold">{fintechDetails.integration_partners?.split(',').length || 0}</p>
+                <p className="text-2xl font-bold">{integrations.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  Active integrations
+                </p>
               </div>
               <Target className="w-8 h-8 text-primary" />
             </div>
@@ -249,53 +343,103 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
 
         <Card>
           <CardHeader>
-            <CardTitle>Market Coverage</CardTitle>
+            <CardTitle>Market Presence</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {marketCoverageData.map((market, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">{market.region}</span>
-                    <span className="text-sm text-muted-foreground">{market.coverage}%</span>
+              {marketCoverageData.length > 0 ? (
+                marketCoverageData.map((market, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">{market.region}</span>
+                      <span className="text-sm text-muted-foreground">{market.coverage}%</span>
+                    </div>
+                    <Progress value={market.coverage} className="h-2" />
                   </div>
-                  <Progress value={market.coverage} className="h-2" />
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No market data available</p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Risk Assessment */}
+      {/* Integration Partners */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Shield className="w-5 h-5 mr-2 text-destructive" />
-            Compliance & Risk Management
+            <Target className="w-5 h-5 mr-2 text-primary" />
+            Integration Ecosystem
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold">Regulatory Compliance</h4>
-              {fintechDetails.regulatory_requirements?.split(',').map((req: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {integrations.map((integration, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-success" />
+                  <span className="text-sm font-medium">{integration.trim()}</span>
+                </div>
+                <Badge variant="secondary" className="text-xs">Active</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* KYC Process */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="w-5 h-5 mr-2 text-blue-500" />
+            KYC & Compliance Process
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg mb-4">
+            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Current KYC Process</h4>
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
+              {fintechDetails.kyc_process || 'No KYC process specified'}
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <h4 className="font-semibold">Regulatory Licenses & Requirements</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {licenseRequirements.map((req, index) => (
+                <div key={index} className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
                   <span className="text-sm">{req.trim()}</span>
                 </div>
               ))}
             </div>
-            <div className="space-y-3">
-              <h4 className="font-semibold">Risk Factors</h4>
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="w-4 h-4 text-warning" />
-                <span className="text-sm">Market concentration risk</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="w-4 h-4 text-warning" />
-                <span className="text-sm">Regulatory changes</span>
-              </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Key Metrics Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Fintech Performance Metrics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">₹{(paymentsVolume / 1000000).toFixed(1)}M</p>
+              <p className="text-sm text-green-700 dark:text-green-300">Monthly Volume</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">{principalMarkets.length}</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">Active Markets</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">{integrations.length}</p>
+              <p className="text-sm text-purple-700 dark:text-purple-300">Integrations</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-orange-600">{licenseRequirements.length}</p>
+              <p className="text-sm text-orange-700 dark:text-orange-300">Licenses</p>
             </div>
           </div>
         </CardContent>

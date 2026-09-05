@@ -101,10 +101,14 @@ export const FounderAssetsVisualization: React.FC<FounderAssetsProps> = ({ dashb
 
   const getRiskColor = (riskTolerance: string | null) => {
     switch (riskTolerance?.toLowerCase()) {
-      case 'high': return 'text-destructive bg-destructive/5 border-destructive/20';
-      case 'medium': return 'text-warning-foreground bg-warning/5 border-warning/20';
-      case 'low': return 'text-success bg-success/5 border-success/20';
-      default: return 'text-muted-foreground bg-muted border-border';
+      case 'high':
+        return 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/40 border-red-300 dark:border-red-700';
+      case 'medium':
+        return 'text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-700';
+      case 'low':
+        return 'text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700';
+      default:
+        return 'text-muted-foreground bg-muted border-border';
     }
   };
 

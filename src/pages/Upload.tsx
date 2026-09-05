@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Loader2, Brain } from "lucide-react";
+import { Upload, FileText, Loader2, Brain, CheckCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +35,59 @@ const UploadPage = () => {
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentAgentIndex, setCurrentAgentIndex] = useState(0);
+  const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
+
+  const agents = [
+    { name: "InputHandlerAgent", description: "Processing your pitch deck...", duration: 8 },
+    { name: "ProblemProductMarketAgent", description: "Analyzing problem & market fit...", duration: 20 },
+    { name: "TeamRiskAgent", description: "Evaluating team & risk factors...", duration: 18 },
+    { name: "FinancialAgent", description: "Reviewing financial metrics...", duration: 22 },
+    { name: "ExecutiveSummaryAgent", description: "Creating executive summary...", duration: 15 },
+    { name: "SlideInsightsAgent", description: "Generating slide insights...", duration: 20 },
+    { name: "InvestmentDecisionAgent", description: "Formulating investment decision...", duration: 12 },
+    { name: "OutputParserAgent", description: "Finalizing analysis results...", duration: 5 }
+  ];
+
+  const startAgentSimulation = () => {
+    let currentIndex = 0;
+    let totalElapsed = 0;
+    
+    const simulateAgents = () => {
+      if (currentIndex < agents.length) {
+        setCurrentAgentIndex(currentIndex);
+        
+        // Calculate timeout based on agent duration (convert to seconds)
+        const timeoutDuration = agents[currentIndex].duration * 1000;
+        totalElapsed += agents[currentIndex].duration;
+        
+        setTimeout(() => {
+          currentIndex++;
+          // If we've reached 2 minutes (120 seconds) and haven't finished, stay at 99%
+          if (totalElapsed >= 120 && currentIndex < agents.length) {
+            setCurrentAgentIndex(agents.length - 1); // Stay at last agent but don't complete
+            return;
+          }
+          simulateAgents();
+        }, timeoutDuration);
+      }
+    };
+    
+    simulateAgents();
+  };
+
+  const getProgressPercentage = () => {
+    if (!isAnalyzing) return 0;
+    if (currentAgentIndex >= agents.length - 1) {
+      // Check if we've been analyzing for more than 2 minutes
+      const elapsedTime = analysisStartTime ? (Date.now() - analysisStartTime) / 1000 : 0;
+      if (elapsedTime >= 120) {
+        return 99; // Stay at 99% if over 2 minutes
+      }
+      return 100; // Complete if under 2 minutes
+    }
+    return ((currentAgentIndex + 1) / agents.length) * 100;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -82,6 +135,11 @@ const UploadPage = () => {
     }
 
     setIsAnalyzing(true);
+    setCurrentAgentIndex(0);
+    setAnalysisStartTime(Date.now());
+    
+    // Start the agent simulation
+    startAgentSimulation();
     
     try {
       console.log('Starting analysis process...');
@@ -200,6 +258,9 @@ const UploadPage = () => {
         }
       }
 
+      // Complete the progress to 100%
+      setCurrentAgentIndex(agents.length);
+      
       toast.success("AI Analysis complete! Redirecting to dashboard...");
       
       // Store analysis data for immediate use
@@ -217,6 +278,10 @@ const UploadPage = () => {
 
     } catch (error) {
       console.error('Error during analysis:', error);
+      
+      // Complete the progress to 100% even on error
+      setCurrentAgentIndex(agents.length);
+      
       toast.error("Analysis failed. Using demo data for preview...");
       
       // Store default analysis data for demo purposes
@@ -361,18 +426,87 @@ const UploadPage = () => {
             </Button>
 
             {isAnalyzing && (
-              <div className="space-y-3 animate-fade-in">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Processing your pitch deck...
+              <div className="space-y-6 animate-fade-in">
+                {/* Overall Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-foreground">Analysis Progress</span>
+                    <span className="text-sm text-muted-foreground">{Math.round(getProgressPercentage())}%</span>
+                  </div>
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <div 
+                      className="bg-gradient-primary h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${getProgressPercentage()}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Analyzing market & financials...
+
+                {/* Agent Progress Steps */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground mb-3">AI Agents Working</h4>
+                  <div className="grid gap-2">
+                    {agents.map((agent, index) => {
+                      const isActive = index === currentAgentIndex;
+                      const isCompleted = index < currentAgentIndex;
+                      const isUpcoming = index > currentAgentIndex;
+                      
+                      return (
+                        <div 
+                          key={agent.name}
+                          className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 ${
+                            isActive 
+                              ? 'bg-primary/10 border-primary/20 shadow-sm' 
+                              : isCompleted 
+                                ? 'bg-green-500/10 border-green-500/20' 
+                                : 'bg-muted/30 border-border/50'
+                          }`}
+                        >
+                          <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                            isActive 
+                              ? 'bg-primary text-primary-foreground' 
+                              : isCompleted 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-muted border border-border'
+                          }`}>
+                            {isActive ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : isCompleted ? (
+                              <CheckCircle className="w-3 h-3" />
+                            ) : (
+                              <Clock className="w-3 h-3 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-medium truncate ${
+                              isActive ? 'text-primary' : isCompleted ? 'text-green-600' : 'text-muted-foreground'
+                            }`}>
+                              {agent.name.replace('Agent', '')}
+                            </div>
+                            <div className={`text-xs truncate ${
+                              isActive ? 'text-primary/70' : isCompleted ? 'text-green-600/70' : 'text-muted-foreground/70'
+                            }`}>
+                              {agent.description}
+                            </div>
+                          </div>
+                          {isActive && (
+                            <div className="flex-shrink-0">
+                              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Generating investor insights...
+
+                {/* Status Message */}
+                <div className="text-center p-4 bg-muted/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    AI is analyzing your pitch deck with advanced algorithms
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    This may take up to 2 minutes for comprehensive analysis
+                  </p>
                 </div>
               </div>
             )}

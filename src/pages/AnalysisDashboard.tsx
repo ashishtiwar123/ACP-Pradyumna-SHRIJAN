@@ -56,13 +56,38 @@ const AnalysisDashboard = () => {
     // Try to get from session storage first
     const sessionData = sessionStorage.getItem('latest_analysis');
     if (sessionData) {
-      const data = JSON.parse(sessionData);
-      // Check for analysis_results in the expected structure
-      const analysisResults = data.expected_outputs?.result?.analysis_results || data.result?.analysis_results || data.analysis_results;
-      if (analysisResults) {
-        setAnalysis(analysisResults);
-        setLoading(false);
-        return;
+      try {
+        const data = JSON.parse(sessionData);
+        // Check for analysis_results in the expected structure
+        const analysisResults = data.expected_outputs?.result?.analysis_results || data.result?.analysis_results || data.analysis_results;
+        if (analysisResults) {
+          // Process the session data similar to API data
+          const processedData = {
+            ...analysisResults,
+            business_overview: typeof analysisResults.business_overview === 'string' ? JSON.parse(analysisResults.business_overview) : analysisResults.business_overview,
+            funding_details: typeof analysisResults.funding_details === 'string' ? JSON.parse(analysisResults.funding_details) : analysisResults.funding_details,
+            market_analysis: typeof analysisResults.market_analysis === 'string' ? JSON.parse(analysisResults.market_analysis) : analysisResults.market_analysis,
+            slide_insights: typeof analysisResults.slide_insights === 'string' ? JSON.parse(analysisResults.slide_insights) : analysisResults.slide_insights,
+            red_flags: typeof analysisResults.red_flags === 'string' ? JSON.parse(analysisResults.red_flags) : analysisResults.red_flags,
+            key_metrics: typeof analysisResults.key_metrics === 'string' ? JSON.parse(analysisResults.key_metrics) : analysisResults.key_metrics,
+            // Ensure numeric fields have safe defaults
+            overall_score: analysisResults.overall_score || 0,
+            financial_health_score: analysisResults.financial_health_score || 0,
+            growth_potential_score: analysisResults.growth_potential_score || 0,
+            risk_assessment_score: analysisResults.risk_assessment_score || 0,
+            current_revenue: typeof analysisResults.current_revenue === 'string' ? parseInt(analysisResults.current_revenue) || 0 : analysisResults.current_revenue || 0,
+            monthly_burn: typeof analysisResults.monthly_burn === 'string' ? parseInt(analysisResults.monthly_burn) || 0 : analysisResults.monthly_burn || 0,
+            runway_months: analysisResults.runway_months || 0,
+            team_size: analysisResults.team_size || 0,
+            funding_ask: typeof analysisResults.funding_ask === 'string' ? parseInt(analysisResults.funding_ask) || 0 : analysisResults.funding_ask || 0,
+            funding_probability_score: analysisResults.funding_probability_score || 0,
+          };
+          setAnalysis(processedData);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing session data:', error);
       }
     }
 
@@ -177,7 +202,30 @@ const AnalysisDashboard = () => {
         .single();
 
       if (error) throw error;
-      setAnalysis(data);
+      
+      // Parse JSON strings if they exist
+      const processedData = {
+        ...data,
+        business_overview: data.business_overview ? (typeof data.business_overview === 'string' ? JSON.parse(data.business_overview) : data.business_overview) : null,
+        funding_details: data.funding_details ? (typeof data.funding_details === 'string' ? JSON.parse(data.funding_details) : data.funding_details) : null,
+        market_analysis: data.market_analysis ? (typeof data.market_analysis === 'string' ? JSON.parse(data.market_analysis) : data.market_analysis) : null,
+        slide_insights: data.slide_insights ? (typeof data.slide_insights === 'string' ? JSON.parse(data.slide_insights) : data.slide_insights) : null,
+        red_flags: data.red_flags ? (typeof data.red_flags === 'string' ? JSON.parse(data.red_flags) : data.red_flags) : null,
+        key_metrics: data.key_metrics ? (typeof data.key_metrics === 'string' ? JSON.parse(data.key_metrics) : data.key_metrics) : null,
+        // Ensure numeric fields have safe defaults
+        overall_score: data.overall_score || 0,
+        financial_health_score: data.financial_health_score || 0,
+        growth_potential_score: data.growth_potential_score || 0,
+        risk_assessment_score: data.risk_assessment_score || 0,
+        current_revenue: typeof data.current_revenue === 'string' ? parseInt(data.current_revenue) || 0 : data.current_revenue || 0,
+        monthly_burn: typeof data.monthly_burn === 'string' ? parseInt(data.monthly_burn) || 0 : data.monthly_burn || 0,
+        runway_months: data.runway_months || 0,
+        team_size: data.team_size || 0,
+        funding_ask: typeof data.funding_ask === 'string' ? parseInt(data.funding_ask) || 0 : data.funding_ask || 0,
+        funding_probability_score: data.funding_probability_score || 0,
+      };
+      
+      setAnalysis(processedData);
     } catch (error) {
       console.error("Error fetching analysis:", error);
       toast.error("Failed to load analysis results");
@@ -410,22 +458,28 @@ const AnalysisDashboard = () => {
                   <h4 className="font-semibold mb-2">Company</h4>
                   <p className="text-muted-foreground">{analysis.startup_name || 'Startup Name'}</p>
                 </div>
-                {analysis.business_overview?.industry && (
+                {analysis.business_overview?.problem && (
                   <div>
-                    <h4 className="font-semibold mb-2">Industry</h4>
-                    <Badge variant="secondary">{analysis.business_overview.industry}</Badge>
+                    <h4 className="font-semibold mb-2">Problem</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{analysis.business_overview.problem}</p>
                   </div>
                 )}
-                {analysis.business_overview?.stage && (
+                {analysis.business_overview?.solution && (
                   <div>
-                    <h4 className="font-semibold mb-2">Stage</h4>
-                    <Badge variant="outline">{analysis.business_overview.stage}</Badge>
+                    <h4 className="font-semibold mb-2">Solution</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{analysis.business_overview.solution}</p>
                   </div>
                 )}
-                {analysis.business_overview?.founded && (
+                {analysis.business_overview?.business_model && (
                   <div>
-                    <h4 className="font-semibold mb-2">Founded</h4>
-                    <p className="text-muted-foreground">{analysis.business_overview.founded}</p>
+                    <h4 className="font-semibold mb-2">Business Model</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{analysis.business_overview.business_model}</p>
+                  </div>
+                )}
+                {analysis.business_overview?.traction && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Traction</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{analysis.business_overview.traction}</p>
                   </div>
                 )}
                 {analysis.executive_summary && (
@@ -454,6 +508,20 @@ const AnalysisDashboard = () => {
                     ${analysis.funding_ask ? (analysis.funding_ask / 1000000).toFixed(1) + 'M' : '0'}
                   </p>
                 </div>
+                {analysis.funding_details?.funding_stage && (
+                  <div>
+                    <h4 className="font-semibold mb-1">Funding Stage</h4>
+                    <Badge variant="outline" className="capitalize">{analysis.funding_details.funding_stage}</Badge>
+                  </div>
+                )}
+                {analysis.funding_details?.funding_raised && (
+                  <div>
+                    <h4 className="font-semibold mb-1">Previous Funding</h4>
+                    <p className="text-sm text-muted-foreground">
+                      ${(analysis.funding_details.funding_raised / 1000).toFixed(0)}K raised
+                    </p>
+                  </div>
+                )}
                 {analysis.funding_details?.use_of_funds && (
                   <div>
                     <h4 className="font-semibold mb-1">Use of Funds</h4>
@@ -472,12 +540,6 @@ const AnalysisDashboard = () => {
                     <span className="text-sm font-medium">{analysis.funding_probability_score || 0}%</span>
                   </div>
                 </div>
-                {analysis.funding_details?.runway_extension && (
-                  <div>
-                    <h4 className="font-semibold mb-1">Runway Extension</h4>
-                    <p className="text-muted-foreground">{analysis.funding_details.runway_extension} months</p>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -515,28 +577,33 @@ const AnalysisDashboard = () => {
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-lg mb-4">Market Analysis</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {analysis.market_analysis.tam && (
+                    {analysis.market_analysis.market_size_estimate && (
                       <div>
-                        <h4 className="font-semibold mb-2">Total Addressable Market</h4>
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          ${(analysis.market_analysis.tam / 1000000000).toFixed(1)}B
+                        <h4 className="font-semibold mb-2">Market Size</h4>
+                        <div className="text-lg font-bold text-primary mb-1">
+                          {analysis.market_analysis.market_size_estimate}
                         </div>
-                        <p className="text-sm text-muted-foreground">Market size opportunity</p>
+                        <p className="text-sm text-muted-foreground">Total addressable market</p>
                       </div>
                     )}
-                    {analysis.market_analysis.growth_rate && (
+                    {analysis.market_analysis.market_trends && (
                       <div>
-                        <h4 className="font-semibold mb-2">Market Growth</h4>
-                        <div className="text-2xl font-bold text-green-600 mb-1">
-                          {analysis.market_analysis.growth_rate}% CAGR
+                        <h4 className="font-semibold mb-2">Market Trends</h4>
+                        <div className="text-sm text-muted-foreground mb-1">
+                          {analysis.market_analysis.market_trends}
                         </div>
-                        <p className="text-sm text-muted-foreground">Annual growth rate</p>
                       </div>
                     )}
-                    {analysis.market_analysis.competitive_landscape && (
+                    {analysis.market_analysis.target_market && (
                       <div className="md:col-span-2">
-                        <h4 className="font-semibold mb-2">Competitive Landscape</h4>
-                        <p className="text-muted-foreground">{analysis.market_analysis.competitive_landscape}</p>
+                        <h4 className="font-semibold mb-2">Target Market</h4>
+                        <p className="text-muted-foreground">{analysis.market_analysis.target_market}</p>
+                      </div>
+                    )}
+                    {analysis.market_analysis.competitive_edge && (
+                      <div className="md:col-span-2">
+                        <h4 className="font-semibold mb-2">Competitive Edge</h4>
+                        <p className="text-muted-foreground">{analysis.market_analysis.competitive_edge}</p>
                       </div>
                     )}
                   </div>
@@ -554,22 +621,33 @@ const AnalysisDashboard = () => {
           {/* Risk Factors */}
           <TabsContent value="redflags" className="space-y-4">
             {analysis.red_flags && Object.keys(analysis.red_flags).length > 0 ? (
-              Object.entries(analysis.red_flags).map(([key, flag], index) => (
+              Object.entries(analysis.red_flags).map(([category, flags], categoryIndex) => (
                 <Card 
-                  key={index} 
+                  key={categoryIndex} 
                   className="bg-card border-l-4 border-l-destructive"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <AlertTriangle className="h-6 w-6 mt-1 text-destructive" />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg capitalize">{key.replace(/([A-Z])/g, ' $1')}</h3>
+                        <div className="flex items-center gap-2 mb-3">
+                          <h3 className="font-semibold text-lg capitalize">{category} Risks</h3>
                           <Badge variant="destructive">
-                            HIGH RISK
+                            {category.toUpperCase()}
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground">{flag as string}</p>
+                        <div className="space-y-2">
+                          {Array.isArray(flags) ? (
+                            flags.map((flag, flagIndex) => (
+                              <div key={flagIndex} className="flex items-start gap-2">
+                                <div className="w-1.5 h-1.5 bg-destructive rounded-full mt-2 flex-shrink-0" />
+                                <p className="text-muted-foreground text-sm">{flag}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-muted-foreground text-sm">{flags as string}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -636,15 +714,15 @@ const AnalysisDashboard = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Burn per Employee</span>
                       <span className="font-semibold">
-                        ${analysis.monthly_burn && analysis.team_size ? 
-                          ((analysis.monthly_burn / analysis.team_size) / 1000).toFixed(1) + 'K' : '0'}
+                        ${analysis.monthly_burn && analysis.team_size && analysis.team_size > 0 ? 
+                          ((analysis.monthly_burn / analysis.team_size) / 1000).toFixed(1) + 'K' : 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Revenue per Employee</span>
                       <span className="font-semibold text-green-600">
-                        ${analysis.current_revenue && analysis.team_size ? 
-                          ((analysis.current_revenue / analysis.team_size) / 1000).toFixed(0) + 'K' : '0'}
+                        ${analysis.current_revenue && analysis.team_size && analysis.team_size > 0 ? 
+                          ((analysis.current_revenue / analysis.team_size) / 1000).toFixed(0) + 'K' : 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -675,7 +753,7 @@ const AnalysisDashboard = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Valuation Multiple</span>
                       <span className="font-semibold">
-                        {analysis.funding_ask && analysis.current_revenue ? 
+                        {analysis.funding_ask && analysis.current_revenue && analysis.current_revenue > 0 ? 
                           (analysis.funding_ask / analysis.current_revenue).toFixed(1) + 'x' : 'N/A'}
                       </span>
                     </div>

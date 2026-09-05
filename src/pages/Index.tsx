@@ -144,7 +144,7 @@ const Index = () => {
               {/* Glow Effect Background */}
               <div className="absolute inset-0 bg-gradient-radial from-primary/20 via-transparent to-transparent rounded-full blur-3xl" />
               {/* 3D Model Container */}
-              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-card/50 to-background/30 backdrop-blur-sm">
+              <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-card/50 to-background/30 backdrop-blur-sm">
                 <Spline
                   scene="https://prod.spline.design/32qv2birAJW4tCjP/scene.splinecode"
                 />

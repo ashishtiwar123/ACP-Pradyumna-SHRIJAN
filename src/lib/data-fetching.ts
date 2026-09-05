@@ -101,22 +101,22 @@ export class DataFetchingService {
    * Fetch domain-specific details based on startup type
    */
   private static async fetchDomainDetails(
-    userId: string, 
+    startupProfileId: string, 
     domainType: 'healthcare' | 'fintech' | 'food' | 'ecommerce'
   ): Promise<any> {
     try {
-      console.log(`🏢 Fetching ${domainType} details for user:`, userId);
+      console.log(`🏢 Fetching ${domainType} details for startup profile:`, startupProfileId);
       
       const tableName = `${domainType}_details`;
       const { data, error } = await supabase
         .from(tableName as any)
         .select('*')
-        .eq('user_id', userId)
+        .eq('startup_profile_id', startupProfileId)
         .single();
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log(`📭 No ${domainType} details found for user`);
+          console.log(`📭 No ${domainType} details found for startup profile`);
           return null;
         }
         throw error;
@@ -152,7 +152,7 @@ export class DataFetchingService {
       // Fetch remaining data in parallel
       const [founderAssets, domainDetails] = await Promise.all([
         this.fetchFounderAssets(userId),
-        this.fetchDomainDetails(userId, domainType)
+        this.fetchDomainDetails(startupProfile.id, domainType)
       ]);
 
       const dashboardData: DashboardData = {
@@ -264,7 +264,7 @@ export class DataFetchingService {
           const startupProfile = await this.fetchStartupProfile(userId);
           if (startupProfile) {
             const domainType = this.determineDomainType(startupProfile);
-            return await this.fetchDomainDetails(userId, domainType);
+            return await this.fetchDomainDetails(startupProfile.id, domainType);
           }
           throw new Error('Cannot determine domain type without startup profile');
         }
