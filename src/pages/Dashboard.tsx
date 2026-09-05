@@ -291,7 +291,7 @@ const Dashboard: React.FC = () => {
     <div className="flex flex-col h-full">
       {/* Logo/Header */}
       <div className="p-6 border-b border-border">
-        <h2 className="text-lg font-semibold text-card-foreground">
+        <h2 className="text-lg font-semibold text-card-foreground truncate" title={dashboardData?.startup_profile.startup_name || 'Dashboard'}>
           {dashboardData?.startup_profile.startup_name || 'Dashboard'}
         </h2>
         <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
@@ -324,7 +324,7 @@ const Dashboard: React.FC = () => {
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{item.name}</p>
+                <p className="text-sm font-medium truncate">{item.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{item.description}</p>
               </div>
             </button>
@@ -483,7 +483,7 @@ const Dashboard: React.FC = () => {
                       </Button>
                     </SheetTrigger>
                   </Sheet>
-                  <h1 className="text-lg font-semibold text-card-foreground">
+                  <h1 className="text-lg font-semibold text-card-foreground truncate">
                     {navigationItems.find(item => item.id === activeView)?.name}
                   </h1>
                 </div>

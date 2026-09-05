@@ -61,13 +61,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card className={`${colorClasses[color]} ${className}`}>
-      <CardContent className="p-6">
+    <Card className={`${colorClasses[color]} ${className} min-w-0 overflow-hidden`}>
+      <CardContent className="p-6 min-w-0">
         <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-muted-foreground mb-1 truncate" title={title}>{title}</p>
             <div className="flex items-baseline space-x-2">
-              <h3 className="text-2xl font-bold text-card-foreground">{value}</h3>
+              <h3 className="text-2xl font-bold text-card-foreground truncate" title={String(value)}>{value}</h3>
               {trend && trendValue && (
                 <div className={`flex items-center text-sm ${
                   trend === 'up' ? 'text-success' : 
@@ -80,7 +80,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               )}
             </div>
             {subtitle && (
-              <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+              <p className="text-xs text-muted-foreground mt-1 truncate" title={subtitle}>{subtitle}</p>
             )}
           </div>
           <div className={`${iconColorClasses[color]} ml-4`}>
@@ -106,18 +106,18 @@ const HealthScoreCard: React.FC<{ score: number; title: string; description: str
   const color = getScoreColor(score);
 
   return (
-    <Card className="border-l-4 border-l-blue-500">
+    <Card className="border-l-4 border-l-blue-500 min-w-0 overflow-hidden">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center justify-between">
-          {title}
-          <Badge variant={color === 'success' ? 'default' : color === 'warning' ? 'secondary' : 'destructive'}>
+        <CardTitle className="text-lg flex items-center justify-between min-w-0">
+          <span className="truncate mr-2" title={title}>{title}</span>
+          <Badge variant={color === 'success' ? 'default' : color === 'warning' ? 'secondary' : 'destructive'} className="whitespace-nowrap">
             {score}/100
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Progress value={score} className="mb-3" />
-        <p className="text-sm text-gray-600">{description}</p>
+        <p className="text-sm text-gray-600 truncate" title={description}>{description}</p>
       </CardContent>
     </Card>
   );
@@ -188,7 +188,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
       )}
 
       {/* Core Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-w-0">
         <MetricCard
           title="Current Revenue"
           value={formatCurrency(startup_profile.revenue_current_year)}
@@ -207,7 +207,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
 
         <MetricCard
           title="Runway"
-          value={`${runway} mo`}
+          value={runway > 0 ? `${runway} mo` : "N/A"}
           subtitle="Months until cash depletion"
           icon={<Clock className="w-8 h-8" />}
           color={runway > 12 ? 'success' : runway > 6 ? 'warning' : 'danger'}
@@ -223,22 +223,24 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
       </div>
 
       {/* Business Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-w-0">
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building className="w-5 h-5 mr-2 text-blue-600" />
-              Business Overview
+            <CardTitle className="flex items-center min-w-0">
+              <Building className="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" />
+              <span className="truncate">Business Overview</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 min-w-0">
             <div>
               <p className="text-sm text-gray-600">Company</p>
-              <p className="font-semibold">{startup_profile.startup_name}</p>
+              <p className="font-semibold truncate" title={startup_profile.startup_name}>
+                {startup_profile.startup_name}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Industry</p>
-              <Badge variant="outline" className="mt-1">
+              <Badge variant="outline" className="mt-1 truncate max-w-full" title={startup_profile.industry}>
                 {startup_profile.industry}
               </Badge>
             </div>
@@ -255,14 +257,14 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Target className="w-5 h-5 mr-2 text-green-600" />
-              Funding Details
+            <CardTitle className="flex items-center min-w-0">
+              <Target className="w-5 h-5 mr-2 text-green-600 flex-shrink-0" />
+              <span className="truncate">Funding Details</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 min-w-0">
             <div>
               <p className="text-sm text-gray-600">Funding Ask</p>
               <p className="font-semibold text-lg">
@@ -271,16 +273,16 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
             </div>
             <div>
               <p className="text-sm text-gray-600">Use of Funds</p>
-              <p className="text-sm text-gray-800">
+              <p className="text-sm text-gray-800 truncate" title={startup_profile.funding_use || 'Not specified'}>
                 {startup_profile.funding_use || 'Not specified'}
               </p>
             </div>
             {analysisResult && (
               <div>
-                <p className="text-sm text-gray-600">Funding Probability</p>
+                <p className="text-sm text-gray-600 truncate">Funding Probability</p>
                 <div className="flex items-center space-x-2 mt-1">
                   <Progress value={analysisResult.predictions.funding_probability} className="flex-1" />
-                  <span className="text-sm font-semibold">
+                  <span className="text-sm font-semibold whitespace-nowrap">
                     {analysisResult.predictions.funding_probability}%
                   </span>
                 </div>
@@ -290,14 +292,14 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
         </Card>
 
         {founder_assets && (
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Zap className="w-5 h-5 mr-2 text-yellow-600" />
-                Founder Assets
+              <CardTitle className="flex items-center min-w-0">
+                <Zap className="w-5 h-5 mr-2 text-yellow-600 flex-shrink-0" />
+                <span className="truncate">Founder Assets</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 min-w-0">
               <div>
                 <p className="text-sm text-gray-600">Net Worth</p>
                 <p className="font-semibold text-lg">
@@ -329,11 +331,11 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
 
       {/* Performance Category Badge */}
       {analysisResult && (
-        <Card className="bg-card ">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
+        <Card className="bg-card min-w-0 overflow-hidden">
+          <CardContent className="p-6 min-w-0">
+            <div className="flex items-center justify-between min-w-0 gap-4">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg font-semibold mb-2 truncate">
                   Performance Category
                 </h3>
                 <Badge 
@@ -347,9 +349,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ dashboardData, analy
                   {analysisResult.performance_category.replace('_', ' ').toUpperCase()}
                 </Badge>
               </div>
-              <div className="text-right">
+              <div className="text-right min-w-0">
                 <p className="text-sm text-gray-600">Domain</p>
-                <p className="font-semibold capitalize">{domain_type}</p>
+                <p className="font-semibold capitalize truncate" title={domain_type}>{domain_type}</p>
               </div>
             </div>
           </CardContent>

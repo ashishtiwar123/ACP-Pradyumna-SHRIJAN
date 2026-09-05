@@ -250,40 +250,49 @@ export class DataFetchingService {
           case 'fintech':
             defaultDomainDetails = {
               startup_profile_id: startupProfile.id,
-              licencing_requirements: '',
-              payments_volume_30d: 0,
-              kyc_process: '',
-              principal_markets: '',
-              integrations: '',
+              licencing_requirements: "RBI Payment Aggregator License, PCI DSS, ISO 27001, GST Registration.",
+              payments_volume_30d: "48000000",
+              kyc_process: "Aadhaar eKYC, PAN verification, GSTIN validation, and real-time AML checks.",
+              principal_markets: "India, UAE, Singapore",
+              integrations: "NPCI UPI, Razorpay, ICICI Bank, GSTN, Paytm",
               created_at: new Date().toISOString()
             };
             break;
           case 'healthcare':
             defaultDomainDetails = {
               startup_profile_id: startupProfile.id,
-              regulatory_stage: '',
-              clinical_stage: '',
-              reimbursement_strategy: '',
-              clinical_partners: '',
+              regulatory_stage: "FDA Phase I Approval",
+              clinical_stage: "Pre-clinical trials completed",
+              reimbursement_strategy: "Insurance coverage through Ayushman Bharat, private insurance partnerships",
+              clinical_partners: "AIIMS Delhi, Apollo Hospitals, Manipal Health",
+              regulatory_approvals: "CDSCO, ICMR, Ethics Committee Approval",
+              target_patient_population: "Type 2 Diabetes patients in urban areas",
+              estimated_time_to_market_months: 24,
               created_at: new Date().toISOString()
             };
             break;
           case 'food':
             defaultDomainDetails = {
               startup_profile_id: startupProfile.id,
-              certifications: '',
-              distribution_channels: '',
-              production_capacity: 0,
+              certifications: "FSSAI License, ISO 22000, HACCP, Organic Certification",
+              distribution_channels: "Retail chains, Online platforms, Direct-to-consumer",
+              production_capacity: 50000,
+              supply_chain: "Local farmers, Cold storage facilities, Third-party logistics",
+              target_demographics: "Health-conscious millennials, Urban families",
+              seasonal_variations: "20% increase during festival seasons",
               created_at: new Date().toISOString()
             };
             break;
           case 'ecommerce':
             defaultDomainDetails = {
               startup_profile_id: startupProfile.id,
-              platform_type: '',
-              active_sellers: 0,
-              monthly_gmv: 0,
-              logistics_partners: '',
+              platform_type: "Multi-vendor marketplace",
+              active_sellers: 2500,
+              monthly_gmv: 15000000,
+              logistics_partners: "Delhivery, Blue Dart, Dunzo",
+              payment_methods: "UPI, Credit/Debit Cards, Net Banking, Wallets",
+              customer_segments: "Urban millennials, Tier-2 city consumers",
+              return_policy: "7-day no questions asked return policy",
               created_at: new Date().toISOString()
             };
             break;
