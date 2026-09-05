@@ -118,22 +118,42 @@ const UploadPage = () => {
       // Process and insert analysis results and logs
       let analysisResultId = null;
       
-      // Insert analysis_results if present
-      if (result.result?.analysis_results || result.expected_outputs?.result?.analysis_results) {
-        const analysisResults = result.result?.analysis_results || result.expected_outputs?.result?.analysis_results;
-        
-        // Normalize types and add required fields
-        const resultsNormalized = normalizeTypesDeep({
-          ...analysisResults,
+      // Insert analysis_results if present - check expected_outputs first
+      const analysisResults = result.expected_outputs?.result?.analysis_results || result.result?.analysis_results;
+      
+      if (analysisResults) {
+        // Create a clean results object with only the fields that exist in the schema
+        const resultsForInsert = {
           user_id: user.id,
-          // Remove fields that shouldn't be in the insert (like id if it's auto-generated)
-          id: undefined,
-          created_at: undefined,
-        });
+          executive_summary: analysisResults.executive_summary || null,
+          slide_insights: analysisResults.slide_insights || null,
+          red_flags: analysisResults.red_flags || null,
+          key_metrics: analysisResults.key_metrics || {},
+          overall_score: analysisResults.overall_score ? Number(analysisResults.overall_score) : null,
+          startup_name: analysisResults.startup_name || null,
+          financial_health_score: analysisResults.financial_health_score ? Number(analysisResults.financial_health_score) : null,
+          growth_potential_score: analysisResults.growth_potential_score ? Number(analysisResults.growth_potential_score) : null,
+          risk_assessment_score: analysisResults.risk_assessment_score ? Number(analysisResults.risk_assessment_score) : null,
+          current_revenue: analysisResults.current_revenue ? Number(analysisResults.current_revenue) : 0,
+          monthly_burn: analysisResults.monthly_burn ? Number(analysisResults.monthly_burn) : 0,
+          runway_months: analysisResults.runway_months ? Number(analysisResults.runway_months) : 0,
+          team_size: analysisResults.team_size ? Number(analysisResults.team_size) : 0,
+          funding_ask: analysisResults.funding_ask ? Number(analysisResults.funding_ask) : 0,
+          funding_probability_score: analysisResults.funding_probability_score ? Number(analysisResults.funding_probability_score) : null,
+          business_overview: analysisResults.business_overview || null,
+          funding_details: analysisResults.funding_details || null,
+          investment_recommendation: analysisResults.investment_recommendation || null,
+          comparable_companies: analysisResults.comparable_companies || null,
+          market_analysis: analysisResults.market_analysis || null,
+          status: analysisResults.status || 'completed',
+        };
+        
+        console.log('Inserting analysis results:', resultsForInsert);
+        console.log('Original analysis results from AI:', analysisResults);
         
         const { data: analysisResultRow, error: analysisResultError } = await supabase
           .from('analysis_results')
-          .insert([resultsNormalized])
+          .insert([resultsForInsert])
           .select()
           .single();
           
@@ -146,30 +166,42 @@ const UploadPage = () => {
         console.log('Analysis results saved successfully');
       }
       
-      // Insert analysis_logs if present
-      if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
-        const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
-        
-        // Normalize types and add required fields
-        const logsNormalized = normalizeTypesDeep({
-          ...analysisLogs,
+      // Insert analysis_logs if present - check expected_outputs first
+      const analysisLogs = result.expected_outputs?.result?.analysis_logs || result.result?.analysis_logs;
+      
+      if (analysisLogs) {
+        // Create a completely clean logs object - ensure no unwanted fields
+        const cleanLogsData = {
           user_id: user.id,
+          startup_profile_id: analysisLogs.startup_profile_id || null,
+          model_used: analysisLogs.model_used || 'local-ai',
+          request_summary: analysisLogs.request_summary || null,
+          response_summary: analysisLogs.response_summary || null,
+          startup_name: analysisLogs.startup_name || null,
+          overall_score: analysisLogs.overall_score ? Number(analysisLogs.overall_score) : null,
+          analysis_type: analysisLogs.analysis_type || 'pitch_deck',
+          status: analysisLogs.status || 'completed',
           file_name: file.name,
           analysis_result_id: analysisResultId,
-          // Remove fields that shouldn't be in the insert
-          id: undefined,
-          created_at: undefined,
-        });
+          processing_time_seconds: analysisLogs.processing_time_seconds ? Number(analysisLogs.processing_time_seconds) : null,
+        };
         
-        const { error: analysisLogError } = await supabase
+        console.log('Inserting analysis logs:', cleanLogsData);
+        console.log('Original AI logs data:', analysisLogs);
+        
+        const { data: analysisLogRow, error: analysisLogError } = await supabase
           .from('analysis_logs')
-          .insert([logsNormalized]);
+          .insert([cleanLogsData])
+          .select()
+          .single();
           
         if (analysisLogError) {
           console.error('Analysis logs insert error:', analysisLogError);
+          console.error('Data being inserted:', cleanLogsData);
+          console.error('Original AI logs data:', analysisLogs);
           // Don't throw error for logs, just log it
         } else {
-          console.log('Analysis logs saved successfully');
+          console.log('Analysis logs saved successfully:', analysisLogRow);
         }
       }
 
