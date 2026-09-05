@@ -458,8 +458,9 @@ const FintechInsights: React.FC<DomainInsightsProps> = ({ dashboardData, analysi
   }));
 
   
-  console.log("dashboardData:", dashboardData);
-  console.log('analysisResult:', analysisResult);
+  // Remove these logs as they're duplicated above - keeping for now to track "Data Dash" issue
+  console.log("Data Dash:", dashboardData);
+  console.log('Analysis:', analysisResult);
 
   return (
     <div className="space-y-6">
@@ -908,15 +909,22 @@ export const DomainSpecificInsights: React.FC<DomainInsightsProps> = ({ dashboar
   const validationResult = validateDomainData(dashboardData);
   
   // Add comprehensive logging for debugging
-  console.log('DomainSpecificInsights - Full Props:', {
+  console.log('🔍 DomainSpecificInsights - Detailed Debug Info:', {
     domainType: domain_type,
     domainDetails: domain_details,
     hasDomainDetails: !!domain_details,
     domainDetailsKeys: domain_details ? Object.keys(domain_details) : 'null',
+    domainDetailsType: typeof domain_details,
+    domainDetailsValue: domain_details,
     startupProfileId: dashboardData.startup_profile?.id,
+    startupProfileExists: !!dashboardData.startup_profile,
     analysisResultExists: !!analysisResult,
-    validation: validationResult
+    validation: validationResult,
+    dashboardDataKeys: Object.keys(dashboardData)
   });
+
+  // Log the actual dashboard data for debugging
+  console.log('📊 Full Dashboard Data:', dashboardData);
 
   // If no domain_details but we have a domain_type, show a specific message
   if (!domain_details && domain_type) {

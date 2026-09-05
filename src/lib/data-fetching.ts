@@ -116,26 +116,97 @@ export class DataFetchingService {
       console.log(`🏢 Fetching ${domainType} details for startup profile:`, startupProfileId);
       
       const tableName = `${domainType}_details`;
-      const { data, error } = await supabase
+      
+      // First, let's check if the table exists and what records are available
+      console.log(`📋 Checking ${tableName} table for startup_profile_id:`, startupProfileId);
+      
+      const { data, error, count } = await supabase
         .from(tableName as any)
-        .select('*')
-        .eq('startup_profile_id', startupProfileId)
-        .single();
+        .select('*', { count: 'exact' })
+        .eq('startup_profile_id', startupProfileId);
+
+      console.log(`📊 Query result for ${tableName}:`, {
+        recordCount: count,
+        hasData: !!data && data.length > 0,
+        error: error,
+        startupProfileId: startupProfileId
+      });
 
       if (error) {
+        console.error(`❌ Database error for ${tableName}:`, error);
         if (error.code === 'PGRST116') {
-          console.log(`📭 No ${domainType} details found for startup profile`);
+          console.log(`📭 No ${domainType} details found for startup profile (PGRST116)`);
           return null;
         }
-        throw error;
+        
+        // Log the full error for debugging
+        console.error(`❌ Full error details for ${tableName}:`, {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        return null; // Don't throw, return null for optional data
       }
 
-      console.log(`✅ ${domainType} details fetched successfully`);
-      return data;
+      if (!data || data.length === 0) {
+        console.log(`📭 No ${domainType} details found - empty result set`);
+        return null;
+      }
+
+      const result = data[0]; // Take first record
+      console.log(`✅ ${domainType} details fetched successfully:`, {
+        startupProfileId: (result as any)?.startup_profile_id || 'N/A',
+        keys: result ? Object.keys(result) : [],
+        hasRequiredFields: !!(result as any)?.startup_profile_id
+      });
+      
+      return result;
     } catch (error) {
-      console.error(`❌ Error fetching ${domainType} details:`, error);
-      // Don't throw error for domain details as it might be optional
+      console.error(`❌ Unexpected error fetching ${domainType} details:`, error);
       return null;
+    }
+  }
+
+  /**
+   * Debug helper to check domain details availability
+   */
+  static async debugDomainDetailsAvailability(startupProfileId: string, domainType: string) {
+    try {
+      console.log(`🔍 Debug: Checking domain details availability for ${domainType}`);
+      
+      // Check all domain detail tables to see what exists
+      const tables = ['healthcare_details', 'fintech_details', 'food_details', 'ecommerce_details'];
+      
+      for (const table of tables) {
+        const { data, error, count } = await supabase
+          .from(table as any)
+          .select('id, startup_profile_id', { count: 'exact' })
+          .eq('startup_profile_id', startupProfileId);
+          
+        console.log(`📋 ${table} for startup ${startupProfileId}:`, {
+          count,
+          hasRecords: count && count > 0,
+          error: error?.message || null
+        });
+      }
+      
+      // Also check if there are any records with different startup_profile_id values
+      const targetTable = `${domainType}_details`;
+      const { data: allRecords, error: allError } = await supabase
+        .from(targetTable as any)
+        .select('id, startup_profile_id')
+        .limit(10);
+        
+      console.log(`📊 Sample records from ${targetTable}:`, {
+        totalSample: allRecords?.length || 0,
+        sampleIds: allRecords?.map(r => (r as any).startup_profile_id) || [],
+        error: allError?.message || null
+      });
+      
+    } catch (error) {
+      console.error('🚨 Debug check failed:', error);
     }
   }
 
@@ -168,6 +239,12 @@ export class DataFetchingService {
         domainDetailsKeys: domainDetails ? Object.keys(domainDetails) : null,
         startupProfileId: startupProfile.id
       });
+
+      // If domain details are null, run debug check
+      if (!domainDetails) {
+        console.log(`🔍 Domain details are null, running debug check...`);
+        await this.debugDomainDetailsAvailability(startupProfile.id, domainType);
+      }
 
       const dashboardData: DashboardData = {
         startup_profile: startupProfile,
