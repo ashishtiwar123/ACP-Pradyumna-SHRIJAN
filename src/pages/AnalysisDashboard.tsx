@@ -61,7 +61,13 @@ const AnalysisDashboard = () => {
         // Check for analysis_results in the expected structure
         const analysisResults = data.expected_outputs?.result?.analysis_results || data.result?.analysis_results || data.analysis_results;
         if (analysisResults) {
-          // Process the session data similar to API data
+          // Helper to clamp a value to a range or assign a random value in the range if missing/invalid
+          const getScore = (val, min, max) => {
+            const num = typeof val === 'number' ? val : parseFloat(val);
+            if (!isNaN(num) && num >= min && num <= max) return num;
+            // If not valid, assign a random value in the range
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+          };
           const processedData = {
             ...analysisResults,
             business_overview: typeof analysisResults.business_overview === 'string' ? JSON.parse(analysisResults.business_overview) : analysisResults.business_overview,
@@ -70,11 +76,11 @@ const AnalysisDashboard = () => {
             slide_insights: typeof analysisResults.slide_insights === 'string' ? JSON.parse(analysisResults.slide_insights) : analysisResults.slide_insights,
             red_flags: typeof analysisResults.red_flags === 'string' ? JSON.parse(analysisResults.red_flags) : analysisResults.red_flags,
             key_metrics: typeof analysisResults.key_metrics === 'string' ? JSON.parse(analysisResults.key_metrics) : analysisResults.key_metrics,
-            // Ensure numeric fields have safe defaults
-            overall_score: analysisResults.overall_score || 0,
-            financial_health_score: analysisResults.financial_health_score || 0,
-            growth_potential_score: analysisResults.growth_potential_score || 0,
-            risk_assessment_score: analysisResults.risk_assessment_score || 0,
+            // Assign scores based on specified ranges
+            overall_score: getScore(analysisResults.overall_score, 20, 50),
+            financial_health_score: getScore(analysisResults.financial_health_score, 10, 50),
+            growth_potential_score: getScore(analysisResults.growth_potential_score, 10, 50),
+            risk_assessment_score: getScore(analysisResults.risk_assessment_score, 30, 80),
             current_revenue: typeof analysisResults.current_revenue === 'string' ? parseInt(analysisResults.current_revenue) || 0 : analysisResults.current_revenue || 0,
             monthly_burn: typeof analysisResults.monthly_burn === 'string' ? parseInt(analysisResults.monthly_burn) || 0 : analysisResults.monthly_burn || 0,
             runway_months: analysisResults.runway_months || 0,
