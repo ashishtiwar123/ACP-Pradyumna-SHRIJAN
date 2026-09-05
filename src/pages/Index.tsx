@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+
+import Spline from '@splinetool/react-spline';
 import { Brain, FileText, AlertTriangle, Zap, LineChart, MessageSquare } from "lucide-react";
 
 const Index = () => {
@@ -47,6 +49,13 @@ const Index = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-background">
+      {/* Spline 3D Model Section */}
+      <section className="relative flex justify-center items-center h-[400px] sm:h-[500px] lg:h-[600px] w-full overflow-hidden bg-gradient-to-b from-background to-transparent">
+        <div className="absolute inset-0 pointer-events-none z-0" />
+        <div className="relative w-full h-full max-w-5xl mx-auto z-10 rounded-3xl shadow-2xl border border-border overflow-hidden">
+          <Spline scene="https://prod.spline.design/32qv2birAJW4tCjP/scene.splinecode" />
+        </div>
+      </section>
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-accent opacity-50" />

@@ -122,14 +122,17 @@ const UploadPage = () => {
       if (result.result?.analysis_results || result.expected_outputs?.result?.analysis_results) {
         const analysisResults = result.result?.analysis_results || result.expected_outputs?.result?.analysis_results;
         
-        // Normalize types and add required fields
+        // Normalize types and prepare for insert
         const resultsNormalized = normalizeTypesDeep({
           ...analysisResults,
           user_id: user.id,
-          // Remove fields that shouldn't be in the insert (like id if it's auto-generated)
-          id: undefined,
-          created_at: undefined,
         });
+        
+        // Remove fields that shouldn't be in the insert
+        delete resultsNormalized.id;
+        delete resultsNormalized.created_at;
+        
+        console.log('Inserting analysis results:', resultsNormalized);
         
         const { data: analysisResultRow, error: analysisResultError } = await supabase
           .from('analysis_results')
@@ -150,16 +153,19 @@ const UploadPage = () => {
       if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
         const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
         
-        // Normalize types and add required fields
+        // Normalize types and prepare for insert
         const logsNormalized = normalizeTypesDeep({
           ...analysisLogs,
           user_id: user.id,
           file_name: file.name,
           analysis_result_id: analysisResultId,
-          // Remove fields that shouldn't be in the insert
-          id: undefined,
-          created_at: undefined,
         });
+        
+        // Remove fields that shouldn't be in the insert
+        delete logsNormalized.id;
+        delete logsNormalized.created_at;
+        
+        console.log('Inserting analysis logs:', logsNormalized);
         
         const { error: analysisLogError } = await supabase
           .from('analysis_logs')
