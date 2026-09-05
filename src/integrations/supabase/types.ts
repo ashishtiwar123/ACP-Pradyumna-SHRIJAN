@@ -135,62 +135,11 @@ export type Database = {
         ]
       }
 
-      uploads: {
-        Row: {
-          id: string
-          user_id: string
-          startup_profile_id: string | null
-          file_name: string
-          file_path: string
-          file_type: string | null
-          file_size: number | null
-          status: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          startup_profile_id?: string | null
-          file_name: string
-          file_path: string
-          file_type?: string | null
-          file_size?: number | null
-          status?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          startup_profile_id?: string | null
-          file_name?: string
-          file_path?: string
-          file_type?: string | null
-          file_size?: number | null
-          status?: string | null
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "uploads_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "uploads_startup_profile_id_fkey"
-            columns: ["startup_profile_id"]
-            isOneToOne: false
-            referencedRelation: "startup_profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+
 
       analysis_results: {
         Row: {
           id: string
-          upload_id: string
           user_id: string
           executive_summary: string | null
           slide_insights: Json | null
@@ -198,10 +147,25 @@ export type Database = {
           key_metrics: Json | null
           overall_score: number | null
           created_at: string | null
+          startup_name: string | null
+          financial_health_score: number | null
+          growth_potential_score: number | null
+          risk_assessment_score: number | null
+          current_revenue: number | null
+          monthly_burn: number | null
+          runway_months: number | null
+          team_size: number | null
+          funding_ask: number | null
+          funding_probability_score: number | null
+          business_overview: Json | null
+          funding_details: Json | null
+          investment_recommendation: string | null
+          comparable_companies: Json | null
+          market_analysis: Json | null
+          status: string | null
         }
         Insert: {
           id?: string
-          upload_id: string
           user_id: string
           executive_summary?: string | null
           slide_insights?: Json | null
@@ -209,10 +173,25 @@ export type Database = {
           key_metrics?: Json | null
           overall_score?: number | null
           created_at?: string | null
+          startup_name?: string | null
+          financial_health_score?: number | null
+          growth_potential_score?: number | null
+          risk_assessment_score?: number | null
+          current_revenue?: number | null
+          monthly_burn?: number | null
+          runway_months?: number | null
+          team_size?: number | null
+          funding_ask?: number | null
+          funding_probability_score?: number | null
+          business_overview?: Json | null
+          funding_details?: Json | null
+          investment_recommendation?: string | null
+          comparable_companies?: Json | null
+          market_analysis?: Json | null
+          status?: string | null
         }
         Update: {
           id?: string
-          upload_id?: string
           user_id?: string
           executive_summary?: string | null
           slide_insights?: Json | null
@@ -220,15 +199,24 @@ export type Database = {
           key_metrics?: Json | null
           overall_score?: number | null
           created_at?: string | null
+          startup_name?: string | null
+          financial_health_score?: number | null
+          growth_potential_score?: number | null
+          risk_assessment_score?: number | null
+          current_revenue?: number | null
+          monthly_burn?: number | null
+          runway_months?: number | null
+          team_size?: number | null
+          funding_ask?: number | null
+          funding_probability_score?: number | null
+          business_overview?: Json | null
+          funding_details?: Json | null
+          investment_recommendation?: string | null
+          comparable_companies?: Json | null
+          market_analysis?: Json | null
+          status?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "analysis_results_upload_id_fkey"
-            columns: ["upload_id"]
-            isOneToOne: false
-            referencedRelation: "uploads"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "analysis_results_user_id_fkey"
             columns: ["user_id"]
@@ -248,6 +236,13 @@ export type Database = {
           request_summary: string | null
           response_summary: string | null
           created_at: string | null
+          startup_name: string | null
+          overall_score: number | null
+          analysis_type: string | null
+          status: string | null
+          file_name: string | null
+          analysis_result_id: string | null
+          processing_time_seconds: number | null
         }
         Insert: {
           id?: string
@@ -257,6 +252,13 @@ export type Database = {
           request_summary?: string | null
           response_summary?: string | null
           created_at?: string | null
+          startup_name?: string | null
+          overall_score?: number | null
+          analysis_type?: string | null
+          status?: string | null
+          file_name?: string | null
+          analysis_result_id?: string | null
+          processing_time_seconds?: number | null
         }
         Update: {
           id?: string
@@ -266,6 +268,13 @@ export type Database = {
           request_summary?: string | null
           response_summary?: string | null
           created_at?: string | null
+          startup_name?: string | null
+          overall_score?: number | null
+          analysis_type?: string | null
+          status?: string | null
+          file_name?: string | null
+          analysis_result_id?: string | null
+          processing_time_seconds?: number | null
         }
         Relationships: [
           {
@@ -280,6 +289,13 @@ export type Database = {
             columns: ["startup_profile_id"]
             isOneToOne: false
             referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analysis_logs_result_fkey"
+            columns: ["analysis_result_id"]
+            isOneToOne: false
+            referencedRelation: "analysis_results"
             referencedColumns: ["id"]
           }
         ]

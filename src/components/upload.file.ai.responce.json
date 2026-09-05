@@ -1,0 +1,173 @@
+{
+  "expected_outputs": {
+    "result": {
+      "analysis_results": {
+        "id": "a90965d7-1309-43c3-844c-3571d7966953",
+        "user_id": "c1694f29-231a-412e-a349-f06b64b189ff",
+        "executive_summary": "EcoCarbon Ledger addresses the lack of transparent and efficient carbon credit tracking for NGOs and communities, which hinders trust and climate action. The solution is a blockchain-powered platform that enables registration, automated verification via smart contracts, and purchase of carbon credits through a public, immutable ledger. It targets NGOs, environmental agencies, and eco-conscious businesses within a $2B global market growing at 15% CAGR.",
+        "slide_insights": {
+          "startup_name": "EcoCarbon Ledger",
+          "key_problems": "NGOs and communities lack a transparent and efficient way to track carbon credits and ensure proper auditing.",
+          "solution_summary": "EcoCarbon Ledger is a blockchain-powered platform enabling NGOs to register carbon offset projects, auditors to verify them, and customers to purchase verified carbon credits.",
+          "market_highlights": "Primary users include NGOs, environmental agencies, and eco-conscious businesses. Global market for blockchain-based carbon credit verification is estimated at $2B annually, growing at a 15% CAGR.",
+          "traction_metrics": "Product is piloting with 5 NGOs and 2 local auditors, having transacted over 1,000 verified carbon credits. Current revenue: $10,000.",
+          "funding_status": "Seed funding stage. Has raised $500,000. Needs $1,000,000 in additional funding within 10 months. Monthly burn: $20,000.",
+          "team_overview": "Team of 12 core members including blockchain engineers, environmental scientists, and software developers. CEO Alice Johnson (Environmental Tech background), CTO Bob Kumar (Blockchain Specialist).",
+          "risks_and_red_flags": "Operational: Blockchain scalability, integration with third-party registries, potential bugs in smart contracts, security risks. Market: Slower NGO adoption, competitors launching similar solutions. Regulatory: Changes in carbon credit laws or verification standards. Financial: Monthly burn ($20,000) exceeds current revenue ($10,000), need additional funding within 10 months.",
+          "vision_statement": "N/A"
+        },
+        "red_flags": {
+          "operational": [
+            "Blockchain scalability",
+            "Integration with third-party registries",
+            "Potential bugs in smart contracts",
+            "Security risks related to blockchain transactions and data privacy"
+          ],
+          "market": [
+            "Adoption rate among NGOs may be slower than projected",
+            "Competitors could launch similar solutions"
+          ],
+          "regulatory": [
+            "Changes in carbon credit laws or verification standards could impact operations"
+          ],
+          "financial": [
+            "Monthly burn ($20,000) exceeds current revenue ($10,000)",
+            "Need additional funding within 10 months to maintain runway"
+          ]
+        },
+        "key_metrics": {},
+        "overall_score": 72.5,
+        "created_at": "2024-07-30T12:00:00.000000Z",
+        "startup_name": "EcoCarbon Ledger",
+        "financial_health_score": 0,
+        "growth_potential_score": 80,
+        "risk_assessment_score": 65,
+        "current_revenue": 10000.0,
+        "monthly_burn": 20000.0,
+        "runway_months": 10,
+        "team_size": 12,
+        "funding_ask": 1000000.0,
+        "funding_probability_score": 0,
+        "business_overview": {
+          "problem": "NGOs and communities lack a transparent and efficient way to track carbon credits and ensure proper auditing, which reduces trust and slows climate action.",
+          "solution": "EcoCarbon Ledger is a blockchain-powered platform that allows NGOs to register carbon offset projects, auditors to verify them, and customers to purchase verified carbon credits. Smart contracts automate validation, and a public ledger ensures immutable transparency.",
+          "business_model": "Revenue comes from a small transaction fee per carbon credit sold and premium analytics subscriptions for NGOs and auditors. Plans to introduce certification fees for verified projects in year 2.",
+          "traction": "Currently piloted with 5 NGOs and 2 local auditors; over 1,000 verified carbon credits transacted; signed letters of intent with 3 additional NGOs.",
+          "competition": "ClimateLedger, Verra, Gold Standard. EcoCarbon Ledger differentiates through automated blockchain verification, public ledger transparency, and easier integration with existing registries."
+        },
+        "funding_details": {
+          "funding_stage": "Seed",
+          "funding_raised": 500000,
+          "funding_ask": 1000000,
+          "use_of_funds": "N/A"
+        },
+        "investment_recommendation": "Further due diligence required",
+        "comparable_companies": [],
+        "market_analysis": {
+          "target_market": "Primary users include NGOs, environmental agencies, and eco-conscious businesses interested in buying verified carbon credits.",
+          "market_size_estimate": "The global market for blockchain-based carbon credit verification is estimated at $2B annually.",
+          "market_trends": "The market for blockchain-based carbon credit verification is growing at a 15% CAGR.",
+          "competitive_edge": "EcoCarbon Ledger differentiates through automated blockchain verification, public ledger transparency, and easier integration with existing registries."
+        },
+        "status": "completed"
+      },
+      "analysis_logs": {
+        "id": "231e67e3-0c4a-4d7a-8f92-5633358055ee",
+        "user_id": "c1694f29-231a-412e-a349-f06b64b189ff",
+        "startup_profile_id": "995a2862-432a-43f6-932d-304620f4c390",
+        "model_used": "local-ai",
+        "request_summary": "EcoCarbon Ledger addresses the lack of transparent and efficient carbon credit tracking for NGOs and communities, which hinders trust and climate action. The solution is a blockchain-powered platform that enables registration, automated verification via smart contracts, and purchase of carbon credits through a public, immutable ledger. It targets NGOs, environmental agencies, and eco-conscious businesses within a $2B global market growing at 15% CAGR.",
+        "response_summary": "Successfully generated structured analysis results for EcoCarbon Ledger.",
+        "created_at": "2024-07-30T12:00:00.000000Z",
+        "startup_name": "EcoCarbon Ledger",
+        "overall_score": 72.5,
+        "analysis_type": "pitch_deck",
+        "status": "completed",
+        "file_name": "N/A",
+        "analysis_result_id": "a90965d7-1309-43c3-844c-3571d7966953",
+        "processing_time_seconds": 37
+      }
+    }
+  },
+  "result": {
+    "input_data": {
+      "name": "N/A",
+      "founders": "N/A",
+      "problem": "N/A",
+      "solution": "A centralized prototype web application that simulates the workflow of a blockchain-powered Blue Carbon Credit Registry. The system allows NGOs to upload projects, Auditors to verify them, and Customers to purchase carbon credits. The current version uses a Python-based blockchain simulation (with lists, dictionaries, and SHA-256 hashing).",
+      "market": "NGOs / Communities, Auditors, Customers / Buyers interested in blue carbon credits.",
+      "business_model": "N/A",
+      "competition": "N/A",
+      "traction": "Current version uses a Python-based blockchain simulation.",
+      "funding": "N/A",
+      "risks": "N/A",
+      "vision": "Designed to be extended into a real blockchain implementation in the future.",
+      "current_revenue": "N/A",
+      "team_size": "N/A",
+      "monthly_burn": "N/A",
+      "funding_ask": "N/A"
+    },
+    "analysis_outputs": {
+      "problem_product_market": {
+        "problem_summary": "N/A",
+        "problem_importance": "N/A",
+        "solution_summary": "A centralized prototype web application simulating a blockchain-powered Blue Carbon Credit Registry. It facilitates project uploads by NGOs, verification by Auditors, and carbon credit purchases by Customers.",
+        "solution_innovation": "Simulates a blockchain-powered registry for Blue Carbon Credits, using a Python-based simulation for its current prototype.",
+        "target_market": "NGOs / Communities, Auditors, Customers / Buyers interested in blue carbon credits.",
+        "market_size": "N/A",
+        "market_trends": "Emerging market for blue carbon credits and blockchain-based registries for transparency and efficiency in environmental markets.",
+        "product_stage": "Prototype (centralized web application with a blockchain simulation)",
+        "competitive_edge": "Focus on blue carbon credits combined with a simulated blockchain for transparency and a future real blockchain implementation."
+      },
+      "team_risk": {
+        "team_summary": "N/A",
+        "founders_background": "N/A",
+        "key_team_members": "N/A",
+        "team_size": "N/A",
+        "team_expertise_score": "N/A",
+        "operational_risks": "The current system is a Python-based blockchain simulation and needs to be extended into a real blockchain implementation in the future.",
+        "financial_risks": "N/A",
+        "market_risks": "N/A",
+        "regulatory_risks": "N/A",
+        "other_risks": "N/A"
+      },
+      "financial": {
+        "startup_name": "N/A",
+        "current_revenue": "N/A",
+        "monthly_burn": "N/A",
+        "runway_months": "N/A",
+        "funding_ask": "N/A",
+        "funding_stage": "N/A",
+        "funding_probability_score": "N/A",
+        "financial_health_score": "N/A",
+        "growth_potential_score": "N/A"
+      }
+    },
+    "executive_summary": {},
+    "slide_insights": {
+      "startup_name": "N/A",
+      "key_problems": "N/A",
+      "solution_summary": "A centralized prototype web application simulating a blockchain-powered Blue Carbon Credit Registry. It facilitates project uploads by NGOs, verification by Auditors, and carbon credit purchases by Customers.",
+      "market_highlights": "Target users: NGOs / Communities, Auditors, Customers / Buyers interested in blue carbon credits. Market trend: Emerging market for blue carbon credits and blockchain-based registries for transparency and efficiency in environmental markets.",
+      "traction_metrics": "N/A",
+      "funding_status": "N/A",
+      "team_overview": "N/A",
+      "risks_and_red_flags": "The current system is a Python-based blockchain simulation and needs to be extended into a real blockchain implementation in the future.",
+      "vision_statement": "N/A"
+    },
+    "investment_decision": {
+      "startup_name": "N/A",
+      "overall_score": "N/A",
+      "financial_health_score": "N/A",
+      "growth_potential_score": "N/A",
+      "risk_assessment_score": "N/A",
+      "current_revenue": "N/A",
+      "monthly_burn": "N/A",
+      "runway_months": "N/A",
+      "team_size": "N/A",
+      "funding_ask": "N/A",
+      "funding_probability_score": "N/A",
+      "investment_recommendation": "No explicit financial or performance data provided."
+    }
+  }
+}

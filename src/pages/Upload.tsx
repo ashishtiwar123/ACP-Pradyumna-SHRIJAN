@@ -7,6 +7,29 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+// Recursive utility to convert all string numbers to numbers in any object/array
+function normalizeTypesDeep(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(normalizeTypesDeep);
+  } else if (obj && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+      const val = obj[key];
+      if (typeof val === 'string' && val !== '' && !isNaN(Number(val)) && val.trim() !== '') {
+        // Only convert if it's a string that looks like a number
+        newObj[key] = Number(val);
+      } else if (typeof val === 'object' && val !== null) {
+        newObj[key] = normalizeTypesDeep(val);
+      } else {
+        newObj[key] = val;
+      }
+    }
+    return newObj;
+  }
+  return obj;
+}
+
 const UploadPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -72,15 +95,15 @@ const UploadPage = () => {
     setIsAnalyzing(true);
     
     try {
-      console.log('Sending file to local AI model...');
+      console.log('Starting analysis process...');
 
-      // Create FormData to send the file
+      // Send file directly to AI model
       const formData = new FormData();
       formData.append('file', file);
       formData.append('user_id', user.id);
+      formData.append('file_name', file.name);
 
-      // Call local Python AI model
-      const response = await fetch('http://localhost:5000/analyze', {
+      const response = await fetch('http://127.0.0.1:8000/analyze', {
         method: 'POST',
         body: formData,
       });
@@ -89,24 +112,81 @@ const UploadPage = () => {
         throw new Error(`Analysis failed: ${response.statusText}`);
       }
 
-      const analysisData = await response.json();
-      console.log('Analysis completed:', analysisData);
+      const result = await response.json();
+      console.log('Analysis completed:', result);
 
-      // TODO: Save analysis results to database after running migration
-      // For now, just redirect to analysis dashboard
+      // Process and insert analysis results and logs
+      let analysisResultId = null;
+      
+      // Insert analysis_results if present
+      if (result.result?.analysis_results || result.expected_outputs?.result?.analysis_results) {
+        const analysisResults = result.result?.analysis_results || result.expected_outputs?.result?.analysis_results;
+        
+        // Normalize types and add required fields
+        const resultsNormalized = normalizeTypesDeep({
+          ...analysisResults,
+          user_id: user.id,
+          // Remove fields that shouldn't be in the insert (like id if it's auto-generated)
+          id: undefined,
+          created_at: undefined,
+        });
+        
+        const { data: analysisResultRow, error: analysisResultError } = await supabase
+          .from('analysis_results')
+          .insert([resultsNormalized])
+          .select()
+          .single();
+          
+        if (analysisResultError) {
+          console.error('Analysis results insert error:', analysisResultError);
+          throw new Error('Failed to save analysis results: ' + analysisResultError.message);
+        }
+        
+        analysisResultId = analysisResultRow?.id;
+        console.log('Analysis results saved successfully');
+      }
+      
+      // Insert analysis_logs if present
+      if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
+        const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
+        
+        // Normalize types and add required fields
+        const logsNormalized = normalizeTypesDeep({
+          ...analysisLogs,
+          user_id: user.id,
+          file_name: file.name,
+          analysis_result_id: analysisResultId,
+          // Remove fields that shouldn't be in the insert
+          id: undefined,
+          created_at: undefined,
+        });
+        
+        const { error: analysisLogError } = await supabase
+          .from('analysis_logs')
+          .insert([logsNormalized]);
+          
+        if (analysisLogError) {
+          console.error('Analysis logs insert error:', analysisLogError);
+          // Don't throw error for logs, just log it
+        } else {
+          console.log('Analysis logs saved successfully');
+        }
+      }
+
       toast.success("AI Analysis complete! Redirecting to dashboard...");
+      
+      // Store analysis data for immediate use
+      sessionStorage.setItem('latest_analysis', JSON.stringify(result));
+      sessionStorage.setItem('latest_analysis_id', analysisResultId || '');
       
       // Navigate to analysis dashboard
       setTimeout(() => {
         navigate('/analysis-dashboard');
       }, 1500);
 
-      // Store analysis data temporarily in session storage for development
-      sessionStorage.setItem('latest_analysis', JSON.stringify(analysisData));
-
     } catch (error) {
       console.error('Error during analysis:', error);
-      toast.error("Make sure the AI model is running. Redirecting to see demo results...");
+      toast.error("Analysis failed. Using demo data for preview...");
       
       // Store default analysis data for demo purposes
       const defaultAnalysisData = {
