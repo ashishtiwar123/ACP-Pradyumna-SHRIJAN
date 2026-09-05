@@ -134,7 +134,7 @@ Ensure the response is valid JSON and includes all required fields.
 };
 
 export class GeminiAnalysisService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  private model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   async analyzeStartup(startupData: StartupData): Promise<AIAnalysisResult> {
     try {
