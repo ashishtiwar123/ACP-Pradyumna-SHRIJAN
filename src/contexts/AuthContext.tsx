@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -10,7 +9,6 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  checkProfileCompletion: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,22 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Defer profile check to avoid blocking auth state change
-          setTimeout(() => {
-            checkAndRedirect(session.user.id);
-          }, 0);
-        }
+        setLoading(false);
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -47,78 +37,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAndRedirect = async (userId: string) => {
-    const isComplete = await checkProfileCompletion();
-    if (!isComplete) {
-      navigate('/profile-setup');
-    } else {
-      navigate('/dashboard');
-    }
-  };
-
   const signInWithGoogle = async () => {
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-        },
-      });
-      if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in with Google');
-      console.error('Google sign-in error:', error);
+    const redirectUrl = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+    if (error) {
+      console.error('Error signing in with Google:', error.message);
+      throw error;
     }
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setUser(null);
-      setSession(null);
-      navigate('/auth');
-      toast.success('Signed out successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to sign out');
-      console.error('Sign out error:', error);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error.message);
+      throw error;
     }
-  };
-
-  const checkProfileCompletion = async (): Promise<boolean> => {
-    if (!user) return false;
-    
-    try {
-      const { data, error } = await supabase
-        .from('startup_profiles')
-        .select('is_complete')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking profile:', error);
-        return false;
-      }
-
-      return data?.is_complete || false;
-    } catch (error) {
-      console.error('Error checking profile completion:', error);
-      return false;
-    }
+    navigate('/');
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        signInWithGoogle,
-        signOut,
-        checkProfileCompletion,
-      }}
-    >
+    <AuthContext.Provider value={{ user, session, loading, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   );

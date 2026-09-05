@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -9,35 +10,54 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireProfile = false }: ProtectedRouteProps) => {
-  const { user, loading, checkProfileCompletion } = useAuth();
-  const [checkingProfile, setCheckingProfile] = useState(requireProfile);
+  const { user, loading: authLoading } = useAuth();
+  const [profileLoading, setProfileLoading] = useState(requireProfile);
   const [hasProfile, setHasProfile] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const checkProfile = async () => {
-      if (requireProfile && user) {
-        const isComplete = await checkProfileCompletion();
-        setHasProfile(isComplete);
-        setCheckingProfile(false);
+      if (!user || !requireProfile) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('startup_profiles')
+          .select('is_complete')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setHasProfile(!!data?.is_complete);
+      } catch (error) {
+        console.error('Error checking profile:', error);
+        setHasProfile(false);
+      } finally {
+        setProfileLoading(false);
       }
     };
-    checkProfile();
-  }, [user, requireProfile, checkProfileCompletion]);
 
-  if (loading || checkingProfile) {
+    if (!authLoading) {
+      checkProfile();
+    }
+  }, [user, requireProfile, authLoading]);
+
+  if (authLoading || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background/80">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
   if (requireProfile && !hasProfile) {
-    return <Navigate to="/profile-setup" replace />;
+    return <Navigate to="/complete-profile" replace />;
   }
 
   return <>{children}</>;

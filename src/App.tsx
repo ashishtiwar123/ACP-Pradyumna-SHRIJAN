@@ -7,7 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import ProfileSetup from "./pages/ProfileSetup";
+import CompleteProfile from "./pages/CompleteProfile";
 import Upload from "./pages/Upload";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -24,21 +24,30 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/profile-setup" element={
-              <ProtectedRoute>
-                <ProfileSetup />
-              </ProtectedRoute>
-            } />
-            <Route path="/upload" element={
-              <ProtectedRoute requireProfile>
-                <Upload />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute requireProfile>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
+            <Route 
+              path="/complete-profile" 
+              element={
+                <ProtectedRoute>
+                  <CompleteProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/upload" 
+              element={
+                <ProtectedRoute requireProfile>
+                  <Upload />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute requireProfile>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

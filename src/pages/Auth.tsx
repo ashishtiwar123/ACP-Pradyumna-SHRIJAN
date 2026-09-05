@@ -1,50 +1,61 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const { user, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [user, loading, navigate]);
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      toast({
+        title: 'Authentication Error',
+        description: 'Failed to sign in with Google. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background/80">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-background/80 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-8 shadow-2xl shadow-primary/5">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-elegant mb-4">
-              <Sparkles className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-              Welcome to VentureGlow
-            </h1>
-            <p className="text-muted-foreground">
-              AI-Powered Startup Analysis Platform
-            </p>
-          </div>
-
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <Card className="w-full max-w-md border-primary/20 shadow-glow-sm">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Welcome to Startup Analyst
+          </CardTitle>
+          <CardDescription className="text-base">
+            AI-powered pitch deck analysis and investor insights
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div className="space-y-4">
             <Button
-              onClick={signInWithGoogle}
-              className="w-full h-12 text-lg font-medium bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-sm transition-all duration-200"
-              variant="outline"
+              onClick={handleGoogleSignIn}
+              className="w-full h-12 text-base font-semibold"
+              size="lg"
             >
-              <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -64,24 +75,12 @@ const Auth = () => {
               </svg>
               Continue with Google
             </Button>
-
-            <div className="text-center text-sm text-muted-foreground pt-4">
-              <p>By continuing, you agree to our</p>
-              <p className="mt-1">
-                <a href="#" className="text-primary hover:underline">Terms of Service</a>
-                {' '}&{' '}
-                <a href="#" className="text-primary hover:underline">Privacy Policy</a>
-              </p>
-            </div>
           </div>
-        </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Get instant AI-powered insights on your startup pitch decks
+          <p className="text-center text-sm text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
