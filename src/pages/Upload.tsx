@@ -8,6 +8,53 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { geminiService } from "@/lib/gemini-api";
 
+// Helper functions for PostgreSQL type safety & currency string parsing
+function parseCleanNumber(val: any): number | null {
+  if (val === null || val === undefined || val === '') return null;
+  if (typeof val === 'number') return isNaN(val) ? null : val;
+  let str = String(val).trim().toUpperCase();
+  if (str === '') return null;
+
+  // Handle M/B/K suffixes e.g. "1.5M", "$2M", "500K"
+  let multiplier = 1;
+  if (str.endsWith('M')) {
+    multiplier = 1000000;
+    str = str.slice(0, -1);
+  } else if (str.endsWith('B')) {
+    multiplier = 1000000000;
+    str = str.slice(0, -1);
+  } else if (str.endsWith('K')) {
+    multiplier = 1000;
+    str = str.slice(0, -1);
+  }
+
+  str = str.replace(/[^0-9.-]/g, '');
+  const num = parseFloat(str);
+  if (isNaN(num)) return null;
+  return num * multiplier;
+}
+
+function toInteger(val: any, fallback: number = 0): number {
+  const num = parseCleanNumber(val);
+  return num === null ? fallback : Math.round(num);
+}
+
+function toIntegerOrNull(val: any): number | null {
+  const num = parseCleanNumber(val);
+  return num === null ? null : Math.round(num);
+}
+
+function toScoreOrNull(val: any): number | null {
+  const num = toIntegerOrNull(val);
+  if (num === null) return null;
+  return Math.min(100, Math.max(0, num));
+}
+
+function toNumeric(val: any, fallback: number = 0): number {
+  const num = parseCleanNumber(val);
+  return num === null ? fallback : num;
+}
+
 // Recursive utility to convert all string numbers to numbers in any object/array
 function normalizeTypesDeep(obj: any): any {
   if (Array.isArray(obj)) {
@@ -166,17 +213,17 @@ const UploadPage = () => {
           slide_insights: normalizedResults.slide_insights || null,
           red_flags: normalizedResults.red_flags || null,
           key_metrics: normalizedResults.key_metrics || {},
-          overall_score: normalizedResults.overall_score || null,
+          overall_score: toScoreOrNull(normalizedResults.overall_score),
           startup_name: normalizedResults.startup_name || null,
-          financial_health_score: normalizedResults.financial_health_score || null,
-          growth_potential_score: normalizedResults.growth_potential_score || null,
-          risk_assessment_score: normalizedResults.risk_assessment_score || null,
-          current_revenue: normalizedResults.current_revenue || 0,
-          monthly_burn: normalizedResults.monthly_burn || 0,
-          runway_months: normalizedResults.runway_months || 0,
-          team_size: normalizedResults.team_size || 0,
-          funding_ask: normalizedResults.funding_ask || 0,
-          funding_probability_score: normalizedResults.funding_probability_score || null,
+          financial_health_score: toScoreOrNull(normalizedResults.financial_health_score),
+          growth_potential_score: toScoreOrNull(normalizedResults.growth_potential_score),
+          risk_assessment_score: toScoreOrNull(normalizedResults.risk_assessment_score),
+          current_revenue: toNumeric(normalizedResults.current_revenue, 0),
+          monthly_burn: toNumeric(normalizedResults.monthly_burn, 0),
+          runway_months: toInteger(normalizedResults.runway_months, 0),
+          team_size: toInteger(normalizedResults.team_size, 0),
+          funding_ask: toNumeric(normalizedResults.funding_ask, 0),
+          funding_probability_score: toScoreOrNull(normalizedResults.funding_probability_score),
           business_overview: normalizedResults.business_overview || null,
           funding_details: normalizedResults.funding_details || null,
           investment_recommendation: normalizedResults.investment_recommendation || null,
@@ -218,12 +265,12 @@ const UploadPage = () => {
           request_summary: normalizedLogs.request_summary || null,
           response_summary: normalizedLogs.response_summary || null,
           startup_name: normalizedLogs.startup_name || null,
-          overall_score: normalizedLogs.overall_score || null,
+          overall_score: toScoreOrNull(normalizedLogs.overall_score),
           analysis_type: normalizedLogs.analysis_type || 'pitch_deck',
           status: normalizedLogs.status || 'completed',
           file_name: file.name,
           analysis_result_id: analysisResultId,
-          processing_time_seconds: normalizedLogs.processing_time_seconds || null,
+          processing_time_seconds: toIntegerOrNull(normalizedLogs.processing_time_seconds),
         };
         
         console.log('Inserting analysis logs:', cleanLogsData);
