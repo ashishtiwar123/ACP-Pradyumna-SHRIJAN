@@ -178,7 +178,7 @@ const Header = () => {
                 <SheetContent side="left" className="w-[280px] sm:w-[350px]">
                   <div className="flex flex-col gap-4 mt-8">
                     <div className="flex items-center gap-2 font-bold text-xl mb-6">
-                      <TrendingUp className="h-6 w-6 text-primary" />
+                      <img src="/logo.png" alt="VentureSight Logo" className="h-8 w-auto object-contain" />
                       VentureSight
                     </div>
                     
@@ -203,7 +203,7 @@ const Header = () => {
               to="/" 
               className="flex items-center gap-2 font-bold text-xl"
             >
-              <TrendingUp className="h-6 w-6 text-primary" />
+              <img src="/logo.png" alt="VentureSight Logo" className="h-8 w-auto object-contain" />
               VentureSight
             </Link>
           </div>

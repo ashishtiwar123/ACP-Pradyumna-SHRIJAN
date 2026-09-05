@@ -423,9 +423,10 @@ Extract key financial, operational, product, and market details from the file, e
 
 Guidelines:
 1. Extract exact figures whenever mentioned in the pitch deck. If a metric is missing, provide a realistic industry-standard estimate based on the startup's stage.
-2. Ensure overall_score, financial_health_score, growth_potential_score, risk_assessment_score, and funding_probability_score are numbers between 0 and 100.
-3. Be rigorous and objective. Highlight red flags clearly.
-4. Return ONLY valid JSON with no markdown syntax outside the JSON block.
+2. Ensure overall_score, financial_health_score, growth_potential_score, risk_assessment_score, and funding_probability_score are whole integers between 0 and 100.
+3. Ensure runway_months and team_size are whole integers (e.g. 2 instead of 2.4).
+4. Be rigorous and objective. Highlight red flags clearly.
+5. Return ONLY valid JSON with no markdown syntax outside the JSON block.
 `;
 };
 
