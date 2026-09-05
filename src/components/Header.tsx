@@ -12,7 +12,8 @@ import {
   User, 
   Home,
   TrendingUp,
-  Loader2
+  Loader2,
+  Newspaper
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,11 @@ const Header = () => {
         name: 'Home',
         href: '/',
         icon: Home,
+      },
+      {
+        name: 'News',
+        href: '/news',
+        icon: Newspaper,
       },
     ];
 

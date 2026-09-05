@@ -14,6 +14,7 @@ import AnalysisDashboard from "./pages/AnalysisDashboard";
 import AnalysisResults from "./pages/AnalysisResults";
 import Dashboard from "./pages/Dashboard";
 import Index from "./pages/Index";
+import News from "./pages/News";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +57,14 @@ const App = () => (
                 element={
                   <Layout>
                     <Auth />
+                  </Layout>
+                } 
+              />
+              <Route 
+                path="/news" 
+                element={
+                  <Layout>
+                    <News />
                   </Layout>
                 } 
               />

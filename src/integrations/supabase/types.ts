@@ -12,6 +12,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      news: {
+        Row: {
+          id: string;
+          title: string;
+          content: string;
+          tag: 'founder' | 'investor' | 'both';
+          timestamp: string;
+          category: string;
+          read_time: number;
+          summary: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          content: string;
+          tag: 'founder' | 'investor' | 'both';
+          timestamp?: string;
+          category: string;
+          read_time: number;
+          summary: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          content?: string;
+          tag?: 'founder' | 'investor' | 'both';
+          timestamp?: string;
+          category?: string;
+          read_time?: number;
+          summary?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string
