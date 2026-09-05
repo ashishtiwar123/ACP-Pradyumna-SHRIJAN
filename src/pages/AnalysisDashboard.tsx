@@ -77,10 +77,10 @@ const AnalysisDashboard = () => {
             red_flags: typeof analysisResults.red_flags === 'string' ? JSON.parse(analysisResults.red_flags) : analysisResults.red_flags,
             key_metrics: typeof analysisResults.key_metrics === 'string' ? JSON.parse(analysisResults.key_metrics) : analysisResults.key_metrics,
             // Assign scores based on specified ranges
-            overall_score: getScore(analysisResults.overall_score, 20, 50) || 0,
-            financial_health_score: getScore(analysisResults.financial_health_score, 10, 50) || 0,
-            growth_potential_score: getScore(analysisResults.growth_potential_score, 10, 50) || 0,
-            risk_assessment_score: getScore(analysisResults.risk_assessment_score, 30, 80) || 0,
+            overall_score: analysisResults.overall_score || getScore(analysisResults.overall_score, 20, 50) || 0,
+            financial_health_score: analysisResults.financial_health_score || getScore(analysisResults.financial_health_score, 10, 50) || 0,
+            growth_potential_score: analysisResults.growth_potential_score || getScore(analysisResults.growth_potential_score, 10, 50) || 0,
+            risk_assessment_score: analysisResults.risk_assessment_score || getScore(analysisResults.risk_assessment_score, 30, 80) || 0,
             current_revenue: typeof analysisResults.current_revenue === 'string' ? parseInt(analysisResults.current_revenue) || 0 : analysisResults.current_revenue || 0,
             monthly_burn: typeof analysisResults.monthly_burn === 'string' ? parseInt(analysisResults.monthly_burn) || 0 : analysisResults.monthly_burn || 0,
             runway_months: analysisResults.runway_months || 0,
@@ -326,11 +326,6 @@ const AnalysisDashboard = () => {
                   <h1 className="text-2xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                     {analysis.startup_name || 'Startup Analysis'}
                   </h1>
-                  {(analysisId?.startsWith('default-demo') || sessionStorage.getItem('is_default_data') === 'true') && (
-                    <Badge variant="outline" className="hidden md:block text-xs">
-                      Demo Data
-                    </Badge>
-                  )}
                 </div>
                 <p className="text-muted-foreground">Investment Analysis Dashboard</p>
               </div>
