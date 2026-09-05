@@ -1,0 +1,129 @@
+├── ABC.js
+├── DASHBOARD_THEME_FIXES.md
+├── README.md
+├── add_missing_columns.sql
+├── bun.lockb
+├── components.json
+├── eslint.config.js
+├── fix_type_mismatches.sql
+├── founder_assets_schema.sql
+├── index.html
+├── investor_dashboard_migration.sql
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   ├── bot.png
+│   ├── favicon.ico
+│   ├── placeholder.svg
+│   └── robots.txt
+├── role_based_auth_migration.sql
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── components
+│   │   ├── DashboardComponents
+│   │   │   ├── AIInsights.tsx
+│   │   │   ├── Charts.tsx
+│   │   │   ├── DomainSpecificInsights.tsx
+│   │   │   ├── FounderAssetsVisualization.tsx
+│   │   │   ├── LoadingStates.tsx
+│   │   │   └── SummaryCards.tsx
+│   │   ├── Header.tsx
+│   │   ├── Layout.tsx
+│   │   ├── auth
+│   │   │   └── ProtectedRoute.tsx
+│   │   └── ui
+│   │       ├── accordion.tsx
+│   │       ├── alert-dialog.tsx
+│   │       ├── alert.tsx
+│   │       ├── aspect-ratio.tsx
+│   │       ├── avatar.tsx
+│   │       ├── badge.tsx
+│   │       ├── breadcrumb.tsx
+│   │       ├── button.tsx
+│   │       ├── calendar.tsx
+│   │       ├── card.tsx
+│   │       ├── carousel.tsx
+│   │       ├── chart.tsx
+│   │       ├── checkbox.tsx
+│   │       ├── collapsible.tsx
+│   │       ├── command.tsx
+│   │       ├── context-menu.tsx
+│   │       ├── dialog.tsx
+│   │       ├── drawer.tsx
+│   │       ├── dropdown-menu.tsx
+│   │       ├── form.tsx
+│   │       ├── hover-card.tsx
+│   │       ├── input-otp.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── menubar.tsx
+│   │       ├── navigation-menu.tsx
+│   │       ├── pagination.tsx
+│   │       ├── popover.tsx
+│   │       ├── progress.tsx
+│   │       ├── radio-group.tsx
+│   │       ├── resizable.tsx
+│   │       ├── scroll-area.tsx
+│   │       ├── select.tsx
+│   │       ├── separator.tsx
+│   │       ├── sheet.tsx
+│   │       ├── sidebar.tsx
+│   │       ├── skeleton.tsx
+│   │       ├── slider.tsx
+│   │       ├── sonner.tsx
+│   │       ├── switch.tsx
+│   │       ├── table.tsx
+│   │       ├── tabs.tsx
+│   │       ├── textarea.tsx
+│   │       ├── theme-toggle.tsx
+│   │       ├── toast.tsx
+│   │       ├── toaster.tsx
+│   │       ├── toggle-group.tsx
+│   │       ├── toggle.tsx
+│   │       ├── tooltip.tsx
+│   │       └── use-toast.ts
+│   ├── contexts
+│   │   └── ThemeContext.tsx
+│   ├── hooks
+│   │   ├── use-mobile.tsx
+│   │   ├── use-toast.ts
+│   │   ├── useAuth.tsx
+│   │   └── useProfile.tsx
+│   ├── index.css
+│   ├── integrations
+│   │   ├── full_database_redesign.sql
+│   │   └── supabase
+│   │       ├── client.ts
+│   │       └── types.ts
+│   ├── lib
+│   │   ├── dashboard-cache.ts
+│   │   ├── data-fetching.ts
+│   │   ├── gemini-api.ts
+│   │   ├── route-safety.ts
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── pages
+│   │   ├── AnalysisDashboard.tsx
+│   │   ├── AnalysisResults.tsx
+│   │   ├── Auth.tsx
+│   │   ├── CompleteProfile.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── Index.tsx
+│   │   ├── NotFound.tsx
+│   │   └── Upload.tsx
+│   └── vite-env.d.ts
+├── supabase
+│   ├── config.toml
+│   ├── functions
+│   │   └── analyze-startup
+│   │       └── index.ts
+│   └── migrations
+│       ├── 20251009124829_80a12fb2-287d-4635-9c91-07e65a1f860e.sql
+│       └── 20251009125036_40e4c6b7-da0f-4c3f-9691-049d0bc107f4.sql
+├── tailwind.config.ts
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts

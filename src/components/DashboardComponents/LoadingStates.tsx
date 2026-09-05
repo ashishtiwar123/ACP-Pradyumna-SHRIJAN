@@ -222,10 +222,10 @@ export const ErrorStates = {
   ),
 
   IncompleteProfile: ({ onRetry }: { onRetry?: () => void }) => (
-    <Alert className="mb-6 border-orange-200 bg-orange-50">
-      <AlertCircle className="h-4 w-4 text-orange-600" />
-      <AlertTitle className="text-orange-800">Profile Incomplete</AlertTitle>
-      <AlertDescription className="mt-2 space-y-3 text-orange-700">
+    <Alert className="mb-6 border-orange-500 ">
+      <AlertCircle className="h-4 w-4 " />
+      <AlertTitle className="">Profile Incomplete</AlertTitle>
+      <AlertDescription className="mt-2 space-y-3 ">
         <p>Your startup profile is missing some important information needed for analysis.</p>
         <p>Please complete your profile to get comprehensive insights and recommendations.</p>
         {onRetry && (
@@ -233,7 +233,7 @@ export const ErrorStates = {
             onClick={onRetry} 
             variant="outline" 
             size="sm"
-            className="mt-3 border-orange-300 text-orange-700 hover:bg-orange-100"
+            className="mt-3 border-orange-300 text-orange-700 hover:scale-100"
           >
             Complete Profile
           </Button>
@@ -246,7 +246,7 @@ export const ErrorStates = {
 // Empty States
 export const EmptyStates = {
   NoData: () => (
-    <div className="text-center py-12">
+    <div className="hidden text-center py-12">
       <Database className="w-16 h-16 text-gray-300 mx-auto mb-4" />
       <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Available</h3>
       <p className="text-gray-600 mb-6">

@@ -173,7 +173,7 @@ const Header = () => {
                   <div className="flex flex-col gap-4 mt-8">
                     <div className="flex items-center gap-2 font-bold text-xl mb-6">
                       <TrendingUp className="h-6 w-6 text-primary" />
-                      AI Analyst
+                      VentureSight
                     </div>
                     
                     <nav className="flex flex-col gap-2">
@@ -198,7 +198,7 @@ const Header = () => {
               className="flex items-center gap-2 font-bold text-xl"
             >
               <TrendingUp className="h-6 w-6 text-primary" />
-              AI Analyst
+              VentureSight
             </Link>
           </div>
 
