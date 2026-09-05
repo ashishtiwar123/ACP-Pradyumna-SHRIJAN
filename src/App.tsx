@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import CompleteProfile from "./pages/CompleteProfile";
 import Upload from "./pages/Upload";
 import Dashboard from "./pages/Dashboard";
+import AnalysisResults from "./pages/AnalysisResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,14 @@ const App = () => (
               element={
                 <ProtectedRoute requireProfile>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/analysis" 
+              element={
+                <ProtectedRoute requireProfile>
+                  <AnalysisResults />
                 </ProtectedRoute>
               } 
             />

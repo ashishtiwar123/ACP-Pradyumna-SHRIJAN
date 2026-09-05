@@ -7,13 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, Loader2, Brain } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const UploadPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [startupName, setStartupName] = useState("");
   const [description, setDescription] = useState("");
+  const [pitchText, setPitchText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -45,19 +49,58 @@ const UploadPage = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!file || !startupName) {
-      toast.error("Please provide both a file and startup name");
+    if (!startupName && !pitchText && !description) {
+      toast.error("Please provide startup name, pitch details, or description");
+      return;
+    }
+
+    if (!user) {
+      toast.error("You must be logged in to analyze");
       return;
     }
 
     setIsAnalyzing(true);
     
-    // Simulate analysis process
-    setTimeout(() => {
+    try {
+      // Prepare startup input for analysis
+      const startupInput = `
+Startup Name: ${startupName || 'Not provided'}
+Description: ${description || 'Not provided'}
+Pitch Details: ${pitchText || 'Not provided'}
+${file ? `Attached File: ${file.name}` : ''}
+      `.trim();
+
+      console.log('Sending analysis request...');
+
+      // Call the Gemini analysis edge function
+      const { data, error } = await supabase.functions.invoke('analyze-startup', {
+        body: {
+          startupInput,
+          userId: user.id,
+          uploadId: null,
+        }
+      });
+
+      if (error) {
+        console.error('Analysis error:', error);
+        throw error;
+      }
+
+      console.log('Analysis completed:', data);
+
+      toast.success("AI Analysis complete! Redirecting to results...");
+      
+      // Navigate to analysis results page
+      setTimeout(() => {
+        navigate("/analysis");
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error during analysis:', error);
+      toast.error("Failed to analyze startup. Please try again.");
+    } finally {
       setIsAnalyzing(false);
-      toast.success("Analysis complete!");
-      navigate("/dashboard");
-    }, 3000);
+    }
   };
 
   return (
@@ -130,10 +173,21 @@ const UploadPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Brief Description (Optional)</Label>
+                <Label htmlFor="pitch-text">Pitch Details *</Label>
+                <Textarea
+                  id="pitch-text"
+                  placeholder="Describe your startup idea, problem you're solving, target market, business model, etc."
+                  value={pitchText}
+                  onChange={(e) => setPitchText(e.target.value)}
+                  className="bg-background border-border min-h-[150px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Additional Information (Optional)</Label>
                 <Textarea
                   id="description"
-                  placeholder="Tell us about your startup in a few sentences..."
+                  placeholder="Any additional context or information"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="bg-background border-border min-h-[100px]"
@@ -144,13 +198,13 @@ const UploadPage = () => {
             {/* Analyze Button */}
             <Button
               onClick={handleAnalyze}
-              disabled={!file || !startupName || isAnalyzing}
+              disabled={isAnalyzing || (!startupName && !pitchText)}
               className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg py-6"
             >
               {isAnalyzing ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Analyzing Your Deck...
+                  Analyzing Your Startup...
                 </>
               ) : (
                 <>
@@ -164,15 +218,15 @@ const UploadPage = () => {
               <div className="space-y-3 animate-fade-in">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Extracting text from slides...
+                  Analyzing with Gemini AI...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Running AI analysis...
+                  Evaluating market & competitors...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  Generating insights and red flags...
+                  Generating insights and recommendations...
                 </div>
               </div>
             )}
