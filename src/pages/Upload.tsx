@@ -122,21 +122,37 @@ const UploadPage = () => {
       if (result.result?.analysis_results || result.expected_outputs?.result?.analysis_results) {
         const analysisResults = result.result?.analysis_results || result.expected_outputs?.result?.analysis_results;
         
-        // Normalize types and prepare for insert
-        const resultsNormalized = normalizeTypesDeep({
-          ...analysisResults,
+        // Create a clean results object with only the fields that exist in the schema
+        const resultsForInsert = {
           user_id: user.id,
-        });
+          executive_summary: analysisResults.executive_summary || null,
+          slide_insights: analysisResults.slide_insights || null,
+          red_flags: analysisResults.red_flags || null,
+          key_metrics: analysisResults.key_metrics || {},
+          overall_score: analysisResults.overall_score ? Number(analysisResults.overall_score) : null,
+          startup_name: analysisResults.startup_name || null,
+          financial_health_score: analysisResults.financial_health_score ? Number(analysisResults.financial_health_score) : null,
+          growth_potential_score: analysisResults.growth_potential_score ? Number(analysisResults.growth_potential_score) : null,
+          risk_assessment_score: analysisResults.risk_assessment_score ? Number(analysisResults.risk_assessment_score) : null,
+          current_revenue: analysisResults.current_revenue ? Number(analysisResults.current_revenue) : 0,
+          monthly_burn: analysisResults.monthly_burn ? Number(analysisResults.monthly_burn) : 0,
+          runway_months: analysisResults.runway_months ? Number(analysisResults.runway_months) : 0,
+          team_size: analysisResults.team_size ? Number(analysisResults.team_size) : 0,
+          funding_ask: analysisResults.funding_ask ? Number(analysisResults.funding_ask) : 0,
+          funding_probability_score: analysisResults.funding_probability_score ? Number(analysisResults.funding_probability_score) : null,
+          business_overview: analysisResults.business_overview || null,
+          funding_details: analysisResults.funding_details || null,
+          investment_recommendation: analysisResults.investment_recommendation || null,
+          comparable_companies: analysisResults.comparable_companies || null,
+          market_analysis: analysisResults.market_analysis || null,
+          status: analysisResults.status || 'completed',
+        };
         
-        // Remove fields that shouldn't be in the insert
-        delete resultsNormalized.id;
-        delete resultsNormalized.created_at;
-        
-        console.log('Inserting analysis results:', resultsNormalized);
+        console.log('Inserting analysis results:', resultsForInsert);
         
         const { data: analysisResultRow, error: analysisResultError } = await supabase
           .from('analysis_results')
-          .insert([resultsNormalized])
+          .insert([resultsForInsert])
           .select()
           .single();
           
@@ -153,23 +169,27 @@ const UploadPage = () => {
       if (result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs) {
         const analysisLogs = result.result?.analysis_logs || result.expected_outputs?.result?.analysis_logs;
         
-        // Normalize types and prepare for insert
-        const logsNormalized = normalizeTypesDeep({
-          ...analysisLogs,
+        // Create a clean logs object with only the fields that exist in the schema
+        const logsForInsert = {
           user_id: user.id,
+          startup_profile_id: analysisLogs.startup_profile_id || null,
+          model_used: analysisLogs.model_used || 'local-ai',
+          request_summary: analysisLogs.request_summary || null,
+          response_summary: analysisLogs.response_summary || null,
+          startup_name: analysisLogs.startup_name || null,
+          overall_score: analysisLogs.overall_score ? Number(analysisLogs.overall_score) : null,
+          analysis_type: analysisLogs.analysis_type || 'pitch_deck',
+          status: analysisLogs.status || 'completed',
           file_name: file.name,
           analysis_result_id: analysisResultId,
-        });
+          processing_time_seconds: analysisLogs.processing_time_seconds ? Number(analysisLogs.processing_time_seconds) : null,
+        };
         
-        // Remove fields that shouldn't be in the insert
-        delete logsNormalized.id;
-        delete logsNormalized.created_at;
-        
-        console.log('Inserting analysis logs:', logsNormalized);
+        console.log('Inserting analysis logs:', logsForInsert);
         
         const { error: analysisLogError } = await supabase
           .from('analysis_logs')
-          .insert([logsNormalized]);
+          .insert([logsForInsert]);
           
         if (analysisLogError) {
           console.error('Analysis logs insert error:', analysisLogError);
