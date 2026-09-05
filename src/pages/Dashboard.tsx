@@ -418,12 +418,30 @@ const Dashboard: React.FC = () => {
         );
 
       case 'domain':
-        return (
-          <DomainSpecificInsights 
-            dashboardData={dashboardData!} 
-            analysisResult={analysisResult} 
-          />
-        );
+        try {
+          return (
+            <DomainSpecificInsights 
+              dashboardData={dashboardData!} 
+              analysisResult={analysisResult} 
+            />
+          );
+        } catch (error) {
+          console.error('Error rendering domain insights:', error);
+          return (
+            <Card>
+              <CardContent className="text-center py-12">
+                <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Domain Insights Unavailable</h3>
+                <p className="text-muted-foreground mb-4">
+                  We're having trouble loading your {dashboardData?.domain_type} insights.
+                </p>
+                <Button onClick={() => window.location.reload()}>
+                  Reload Dashboard
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        }
 
       case 'assets':
         return <FounderAssetsVisualization dashboardData={dashboardData!} />;
