@@ -7,46 +7,219 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
-      analysis_results: {
+      profiles: {
         Row: {
-          created_at: string | null
-          executive_summary: string | null
           id: string
-          key_metrics: Json | null
-          overall_score: number | null
-          red_flags: Json | null
-          slide_insights: Json | null
-          upload_id: string
-          user_id: string
+          email: string | null
+          full_name: string | null
+          avatar_url: string | null
+          created_at: string | null
+          updated_at: string | null
+          role: string | null
         }
         Insert: {
+          id: string
+          email?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
           created_at?: string | null
-          executive_summary?: string | null
-          id?: string
-          key_metrics?: Json | null
-          overall_score?: number | null
-          red_flags?: Json | null
-          slide_insights?: Json | null
-          upload_id: string
-          user_id: string
+          updated_at?: string | null
+          role?: string | null
         }
         Update: {
-          created_at?: string | null
-          executive_summary?: string | null
           id?: string
+          email?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: false
+            referencedRelation: "auth.users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      startup_profiles: {
+        Row: {
+          id: string
+          user_id: string
+          startup_name: string
+          industry: string | null
+          stage: string | null
+          description: string | null
+          team_size: number | null
+          founded_year: number | null
+          website: string | null
+          is_complete: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          headquarters: string | null
+          legal_entity_name: string | null
+          incorporation_country: string | null
+          contact_email: string | null
+          contact_phone: number | null
+          revenue_current_year: number | null
+          monthly_burn: number | null
+          runway_months: number | null
+          funding_ask: number | null
+          funding_use: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          startup_name: string
+          industry?: string | null
+          stage?: string | null
+          description?: string | null
+          team_size?: number | null
+          founded_year?: number | null
+          website?: string | null
+          is_complete?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          headquarters?: string | null
+          legal_entity_name?: string | null
+          incorporation_country?: string | null
+          contact_email?: string | null
+          contact_phone?: number | null
+          revenue_current_year?: number | null
+          monthly_burn?: number | null
+          runway_months?: number | null
+          funding_ask?: number | null
+          funding_use?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          startup_name?: string
+          industry?: string | null
+          stage?: string | null
+          description?: string | null
+          team_size?: number | null
+          founded_year?: number | null
+          website?: string | null
+          is_complete?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          headquarters?: string | null
+          legal_entity_name?: string | null
+          incorporation_country?: string | null
+          contact_email?: string | null
+          contact_phone?: number | null
+          revenue_current_year?: number | null
+          monthly_burn?: number | null
+          runway_months?: number | null
+          funding_ask?: number | null
+          funding_use?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      uploads: {
+        Row: {
+          id: string
+          user_id: string
+          startup_profile_id: string | null
+          file_name: string
+          file_path: string
+          file_type: string | null
+          file_size: number | null
+          status: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          startup_profile_id?: string | null
+          file_name: string
+          file_path: string
+          file_type?: string | null
+          file_size?: number | null
+          status?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          startup_profile_id?: string | null
+          file_name?: string
+          file_path?: string
+          file_type?: string | null
+          file_size?: number | null
+          status?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uploads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "uploads_startup_profile_id_fkey"
+            columns: ["startup_profile_id"]
+            isOneToOne: false
+            referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      analysis_results: {
+        Row: {
+          id: string
+          upload_id: string
+          user_id: string
+          executive_summary: string | null
+          slide_insights: Json | null
+          red_flags: Json | null
+          key_metrics: Json | null
+          overall_score: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          upload_id: string
+          user_id: string
+          executive_summary?: string | null
+          slide_insights?: Json | null
+          red_flags?: Json | null
           key_metrics?: Json | null
           overall_score?: number | null
-          red_flags?: Json | null
-          slide_insights?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
           upload_id?: string
           user_id?: string
+          executive_summary?: string | null
+          slide_insights?: Json | null
+          red_flags?: Json | null
+          key_metrics?: Json | null
+          overall_score?: number | null
+          created_at?: string | null
         }
         Relationships: [
           {
@@ -62,138 +235,380 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
-      profiles: {
+
+      analysis_logs: {
         Row: {
-          avatar_url: string | null
-          created_at: string | null
-          email: string | null
-          full_name: string | null
           id: string
-          updated_at: string | null
+          user_id: string
+          startup_profile_id: string | null
+          model_used: string | null
+          request_summary: string | null
+          response_summary: string | null
+          created_at: string | null
         }
         Insert: {
-          avatar_url?: string | null
+          id?: string
+          user_id: string
+          startup_profile_id?: string | null
+          model_used?: string | null
+          request_summary?: string | null
+          response_summary?: string | null
           created_at?: string | null
-          email?: string | null
-          full_name?: string | null
-          id: string
-          updated_at?: string | null
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          email?: string | null
-          full_name?: string | null
           id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      startup_profiles: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          founded_year: number | null
-          id: string
-          industry: string | null
-          is_complete: boolean | null
-          stage: string | null
-          startup_name: string
-          team_size: number | null
-          updated_at: string | null
-          user_id: string
-          website: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          founded_year?: number | null
-          id?: string
-          industry?: string | null
-          is_complete?: boolean | null
-          stage?: string | null
-          startup_name: string
-          team_size?: number | null
-          updated_at?: string | null
-          user_id: string
-          website?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          founded_year?: number | null
-          id?: string
-          industry?: string | null
-          is_complete?: boolean | null
-          stage?: string | null
-          startup_name?: string
-          team_size?: number | null
-          updated_at?: string | null
           user_id?: string
-          website?: string | null
+          startup_profile_id?: string | null
+          model_used?: string | null
+          request_summary?: string | null
+          response_summary?: string | null
+          created_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "startup_profiles_user_id_fkey"
+            foreignKeyName: "analysis_logs_user_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      uploads: {
-        Row: {
-          created_at: string | null
-          file_name: string
-          file_path: string
-          file_size: number | null
-          file_type: string | null
-          id: string
-          startup_profile_id: string | null
-          status: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          file_name: string
-          file_path: string
-          file_size?: number | null
-          file_type?: string | null
-          id?: string
-          startup_profile_id?: string | null
-          status?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          file_name?: string
-          file_path?: string
-          file_size?: number | null
-          file_type?: string | null
-          id?: string
-          startup_profile_id?: string | null
-          status?: string | null
-          user_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "uploads_startup_profile_id_fkey"
+            foreignKeyName: "analysis_logs_startup_fkey"
             columns: ["startup_profile_id"]
             isOneToOne: false
             referencedRelation: "startup_profiles"
             referencedColumns: ["id"]
-          },
+          }
+        ]
+      }
+
+      healthcare_details: {
+        Row: {
+          startup_profile_id: string
+          regulatory_approvals: string | null
+          clinical_stage: string | null
+          target_patient_population: string | null
+          reimbursement_strategy: string | null
+          clinical_partners: string | null
+          estimated_time_to_market_months: number | null
+          created_at: string | null
+        }
+        Insert: {
+          startup_profile_id: string
+          regulatory_approvals?: string | null
+          clinical_stage?: string | null
+          target_patient_population?: string | null
+          reimbursement_strategy?: string | null
+          clinical_partners?: string | null
+          estimated_time_to_market_months?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          startup_profile_id?: string
+          regulatory_approvals?: string | null
+          clinical_stage?: string | null
+          target_patient_population?: string | null
+          reimbursement_strategy?: string | null
+          clinical_partners?: string | null
+          estimated_time_to_market_months?: number | null
+          created_at?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "uploads_user_id_fkey"
+            foreignKeyName: "healthcare_details_fkey"
+            columns: ["startup_profile_id"]
+            isOneToOne: true
+            referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      fintech_details: {
+        Row: {
+          startup_profile_id: string
+          licencing_requirements: string | null
+          payments_volume_30d: number | null
+          kyc_process: string | null
+          principal_markets: string | null
+          integrations: string | null
+          created_at: string | null
+        }
+        Insert: {
+          startup_profile_id: string
+          licencing_requirements?: string | null
+          payments_volume_30d?: number | null
+          kyc_process?: string | null
+          principal_markets?: string | null
+          integrations?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          startup_profile_id?: string
+          licencing_requirements?: string | null
+          payments_volume_30d?: number | null
+          kyc_process?: string | null
+          principal_markets?: string | null
+          integrations?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fintech_details_fkey"
+            columns: ["startup_profile_id"]
+            isOneToOne: true
+            referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      food_details: {
+        Row: {
+          startup_profile_id: string
+          suppliers: string | null
+          supply_chain_risks: string | null
+          perishability_days: number | null
+          food_safety_certifications: string | null
+          gross_margin_percent: number | null
+          created_at: string | null
+        }
+        Insert: {
+          startup_profile_id: string
+          suppliers?: string | null
+          supply_chain_risks?: string | null
+          perishability_days?: number | null
+          food_safety_certifications?: string | null
+          gross_margin_percent?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          startup_profile_id?: string
+          suppliers?: string | null
+          supply_chain_risks?: string | null
+          perishability_days?: number | null
+          food_safety_certifications?: string | null
+          gross_margin_percent?: number | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_details_fkey"
+            columns: ["startup_profile_id"]
+            isOneToOne: true
+            referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      ecommerce_details: {
+        Row: {
+          startup_profile_id: string
+          primary_channels: string | null
+          average_order_value: number | null
+          monthly_active_buyers: number | null
+          fulfillment_strategy: string | null
+          return_rate_percent: number | null
+          created_at: string | null
+        }
+        Insert: {
+          startup_profile_id: string
+          primary_channels?: string | null
+          average_order_value?: number | null
+          monthly_active_buyers?: number | null
+          fulfillment_strategy?: string | null
+          return_rate_percent?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          startup_profile_id?: string
+          primary_channels?: string | null
+          average_order_value?: number | null
+          monthly_active_buyers?: number | null
+          fulfillment_strategy?: string | null
+          return_rate_percent?: number | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ecommerce_details_fkey"
+            columns: ["startup_profile_id"]
+            isOneToOne: true
+            referencedRelation: "startup_profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      founder_assets: {
+        Row: {
+          id: string
+          user_id: string
+          personal_net_worth: number | null
+          liquid_assets: number | null
+          personal_annual_income: number | null
+          credit_score: number | null
+          stock_investments: number | null
+          crypto_investments: number | null
+          real_estate_investments: number | null
+          other_investments: number | null
+          total_investment_portfolio: number | null
+          primary_residence_value: number | null
+          investment_properties_value: number | null
+          total_real_estate_debt: number | null
+          previous_startup_exits: number | null
+          current_business_equity_value: number | null
+          intellectual_property_value: number | null
+          business_assets_description: string | null
+          personal_debt: number | null
+          monthly_personal_expenses: number | null
+          dependents_count: number | null
+          personal_funds_committed_to_startup: number | null
+          previous_funding_raised: number | null
+          investor_connections: string | null
+          board_memberships: string | null
+          industry_experience_years: number | null
+          previous_companies: string | null
+          professional_network_value: string | null
+          advisory_roles: string | null
+          insurance_coverage_amount: number | null
+          retirement_savings: number | null
+          emergency_fund_months: number | null
+          risk_tolerance: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          personal_net_worth?: number | null
+          liquid_assets?: number | null
+          personal_annual_income?: number | null
+          credit_score?: number | null
+          stock_investments?: number | null
+          crypto_investments?: number | null
+          real_estate_investments?: number | null
+          other_investments?: number | null
+          primary_residence_value?: number | null
+          investment_properties_value?: number | null
+          total_real_estate_debt?: number | null
+          previous_startup_exits?: number | null
+          current_business_equity_value?: number | null
+          intellectual_property_value?: number | null
+          business_assets_description?: string | null
+          personal_debt?: number | null
+          monthly_personal_expenses?: number | null
+          dependents_count?: number | null
+          personal_funds_committed_to_startup?: number | null
+          previous_funding_raised?: number | null
+          investor_connections?: string | null
+          board_memberships?: string | null
+          industry_experience_years?: number | null
+          previous_companies?: string | null
+          professional_network_value?: string | null
+          advisory_roles?: string | null
+          insurance_coverage_amount?: number | null
+          retirement_savings?: number | null
+          emergency_fund_months?: number | null
+          risk_tolerance?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          personal_net_worth?: number | null
+          liquid_assets?: number | null
+          personal_annual_income?: number | null
+          credit_score?: number | null
+          stock_investments?: number | null
+          crypto_investments?: number | null
+          real_estate_investments?: number | null
+          other_investments?: number | null
+          primary_residence_value?: number | null
+          investment_properties_value?: number | null
+          total_real_estate_debt?: number | null
+          previous_startup_exits?: number | null
+          current_business_equity_value?: number | null
+          intellectual_property_value?: number | null
+          business_assets_description?: string | null
+          personal_debt?: number | null
+          monthly_personal_expenses?: number | null
+          dependents_count?: number | null
+          personal_funds_committed_to_startup?: number | null
+          previous_funding_raised?: number | null
+          investor_connections?: string | null
+          board_memberships?: string | null
+          industry_experience_years?: number | null
+          previous_companies?: string | null
+          professional_network_value?: string | null
+          advisory_roles?: string | null
+          insurance_coverage_amount?: number | null
+          retirement_savings?: number | null
+          emergency_fund_months?: number | null
+          risk_tolerance?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "founder_assets_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+
+      investors: {
+        Row: {
+          id: string
+          profile_id: string
+          org_name: string | null
+          investor_type: string | null
+          preferred_industries: Json | null
+          invested_startups: Json | null
+          total_invested: number | null
+          recent_activity: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          org_name?: string | null
+          investor_type?: string | null
+          preferred_industries?: Json | null
+          invested_startups?: Json | null
+          total_invested?: number | null
+          recent_activity?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          org_name?: string | null
+          investor_type?: string | null
+          preferred_industries?: Json | null
+          invested_startups?: Json | null
+          total_invested?: number | null
+          recent_activity?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investors_profile_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }

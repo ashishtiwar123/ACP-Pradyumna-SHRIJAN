@@ -1,293 +1,501 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, AlertTriangle, CheckCircle2, TrendingUp, Users, Target } from "lucide-react";
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Sheet, SheetContent, SheetTrigger } from '../components/ui/sheet';
+import { cn } from '../lib/utils';
+import { 
+  Brain, 
+  RefreshCw, 
+  Calendar,
+  BarChart3,
+  Target,
+  Wallet,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  Menu,
+  Home,
+  Activity
+} from 'lucide-react';
 
-const Dashboard = () => {
-  const handleExport = (format: string) => {
-    toast.success(`Exporting as ${format.toUpperCase()}...`);
+// Import all dashboard components
+import { SummaryCards } from '../components/DashboardComponents/SummaryCards';
+import { AIInsights } from '../components/DashboardComponents/AIInsights';
+import { DomainSpecificInsights } from '../components/DashboardComponents/DomainSpecificInsights';
+import { FounderAssetsVisualization } from '../components/DashboardComponents/FounderAssetsVisualization';
+import { 
+  DashboardSkeleton, 
+  LoadingStates, 
+  ErrorStates, 
+  EmptyStates,
+  DashboardErrorBoundary 
+} from '../components/DashboardComponents/LoadingStates';
+
+// Import services
+import { DataFetchingService, DashboardData } from '../lib/data-fetching';
+import { DashboardCacheService } from '../lib/dashboard-cache';
+import { geminiService, AIAnalysisResult } from '../lib/gemini-api';
+
+type DashboardState = 'loading' | 'analyzing' | 'ready' | 'error' | 'empty';
+type ActiveView = 'overview' | 'insights' | 'domain' | 'assets';
+
+interface DashboardError {
+  type: 'data' | 'ai' | 'network' | 'profile';
+  message: string;
+  error?: Error;
+}
+
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [state, setState] = useState<DashboardState>('loading');
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
+  const [error, setError] = useState<DashboardError | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastAnalyzed, setLastAnalyzed] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<ActiveView>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Initialize dashboard
+  useEffect(() => {
+    if (user?.id) {
+      initializeDashboard();
+    }
+  }, [user?.id]);
+
+  const initializeDashboard = async () => {
+    try {
+      setState('loading');
+      setError(null);
+
+      console.log('🚀 Initializing dashboard for user:', user?.id);
+
+      // Check for cached data first
+      const cachedData = DashboardCacheService.getDashboardData(user!.id);
+      
+      if (cachedData) {
+        console.log('📦 Using cached dashboard data');
+        setDashboardData(cachedData.rawData as DashboardData);
+        setAnalysisResult(cachedData.analysisResult);
+        setLastAnalyzed(cachedData.createdAt);
+        setState('ready');
+        return;
+      }
+
+      // Fetch fresh data
+      console.log('🔄 Fetching fresh dashboard data');
+      const freshData = await DataFetchingService.fetchDashboardData(user!.id);
+      setDashboardData(freshData);
+
+      // Check if profile is complete enough for analysis
+      const completeness = await DataFetchingService.checkProfileCompleteness(user!.id);
+      
+      if (completeness.completionPercentage < 60) {
+        setError({
+          type: 'profile',
+          message: `Profile ${completeness.completionPercentage}% complete. Need at least 60% for AI analysis.`
+        });
+        setState('error');
+        return;
+      }
+
+      // Perform AI analysis
+      await performAIAnalysis(freshData);
+
+    } catch (err) {
+      console.error('❌ Dashboard initialization failed:', err);
+      const error = err as Error;
+      
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        setError({
+          type: 'network',
+          message: 'Unable to connect to servers. Please check your internet connection.',
+          error
+        });
+      } else if (error.message.includes('profile')) {
+        setError({
+          type: 'profile',
+          message: error.message,
+          error
+        });
+      } else {
+        setError({
+          type: 'data',
+          message: 'Failed to load dashboard data. Please try again.',
+          error
+        });
+      }
+      
+      setState('error');
+    }
   };
 
-  const redFlags = [
+  const performAIAnalysis = async (data?: DashboardData) => {
+    try {
+      setIsAnalyzing(true);
+      setState('analyzing');
+
+      const dataToAnalyze = data || dashboardData;
+      if (!dataToAnalyze) {
+        throw new Error('No data available for analysis');
+      }
+
+      console.log('🤖 Starting AI analysis...');
+      
+      const startupData = DataFetchingService.convertToStartupData(dataToAnalyze);
+      const analysis = await geminiService.analyzeStartup(startupData);
+      
+      setAnalysisResult(analysis);
+      setLastAnalyzed(new Date().toISOString());
+      
+      // Cache the complete dashboard data
+      DashboardCacheService.saveDashboardData(
+        user!.id,
+        analysis,
+        dataToAnalyze
+      );
+
+      console.log('✅ AI analysis completed and cached');
+      setState('ready');
+
+    } catch (err) {
+      console.error('❌ AI analysis failed:', err);
+      const error = err as Error;
+      
+      setError({
+        type: 'ai',
+        message: 'AI analysis failed. Your data is safe, but insights are unavailable.',
+        error
+      });
+      
+      setState('ready'); // Still show dashboard without AI insights
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleAnalyzeAgain = async () => {
+    if (!dashboardData) return;
+    
+    // Clear cache to force fresh analysis
+    DashboardCacheService.clearDashboardData(user!.id);
+    await performAIAnalysis(dashboardData);
+  };
+
+  const handleRetry = async () => {
+    await initializeDashboard();
+  };
+
+  const getLastAnalyzedText = () => {
+    if (!lastAnalyzed) return null;
+    
+    const date = new Date(lastAnalyzed);
+    const now = new Date();
+    const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return date.toLocaleDateString();
+  };
+
+  // Render different states
+  if (state === 'loading') {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <LoadingStates.FetchingData />
+        <div className="mt-8">
+          <DashboardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (state === 'analyzing') {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <LoadingStates.AnalyzingWithAI />
+        {dashboardData && (
+          <div className="mt-8">
+            <SummaryCards dashboardData={dashboardData} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (state === 'error' && !dashboardData) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        {error?.type === 'data' && (
+          <ErrorStates.DataFetchError 
+            error={error.message} 
+            onRetry={handleRetry}
+          />
+        )}
+        {error?.type === 'network' && (
+          <ErrorStates.NetworkError 
+            error={error.message} 
+            onRetry={handleRetry}
+          />
+        )}
+        {error?.type === 'profile' && (
+          <ErrorStates.IncompleteProfile 
+            onRetry={() => window.location.href = '/complete-profile'}
+          />
+        )}
+        <EmptyStates.NoData />
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="container mx-auto px-6 py-8">
+        <EmptyStates.FirstTime />
+      </div>
+    );
+  }
+
+  // Navigation items
+  const navigationItems = [
     {
-      severity: "high",
-      title: "Missing Competition Analysis",
-      description: "No dedicated slide addressing competitive landscape. Investors expect clear differentiation.",
+      id: 'overview' as ActiveView,
+      name: 'Overview',
+      icon: Home,
+      description: 'Summary & Key Metrics'
     },
     {
-      severity: "medium",
-      title: "Vague Revenue Model",
-      description: "Revenue projections lack detailed breakdown. Consider adding unit economics.",
+      id: 'insights' as ActiveView,
+      name: 'AI Insights',
+      icon: Brain,
+      description: 'Analysis & Recommendations'
     },
     {
-      severity: "low",
-      title: "Limited Team Information",
-      description: "Brief team intro. Consider highlighting relevant industry experience.",
+      id: 'domain' as ActiveView,
+      name: dashboardData?.domain_type || 'Industry',
+      icon: Target,
+      description: 'Domain-specific Insights'
     },
+    {
+      id: 'assets' as ActiveView,
+      name: 'Assets',
+      icon: Wallet,
+      description: 'Founder Financial Profile'
+    }
   ];
 
-  const insights = [
-    {
-      slide: "Problem Statement",
-      score: 9,
-      feedback: "Strong articulation of customer pain points with compelling market data.",
-    },
-    {
-      slide: "Solution",
-      score: 8,
-      feedback: "Clear value proposition. Consider adding more technical differentiation.",
-    },
-    {
-      slide: "Market Opportunity",
-      score: 7,
-      feedback: "Good TAM/SAM/SOM breakdown. Include growth rate projections.",
-    },
-    {
-      slide: "Business Model",
-      score: 6,
-      feedback: "Revenue streams identified but need more detailed unit economics.",
-    },
-  ];
+  const renderSidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo/Header */}
+      <div className="p-6 border-b border-border">
+        <h2 className="text-lg font-semibold text-card-foreground">
+          {dashboardData?.startup_profile.startup_name || 'Dashboard'}
+        </h2>
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
+          <Calendar className="w-4 h-4" />
+          <span>{getLastAnalyzedText()}</span>
+        </div>
+        {analysisResult && (
+          <Badge variant="secondary" className="mt-2 capitalize">
+            {analysisResult.performance_category.replace('_', ' ')}
+          </Badge>
+        )}
+      </div>
 
+      {/* Navigation */}
+      <nav className="flex-1 p-4">
+        <div className="space-y-2">
+          {navigationItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveView(item.id);
+                setSidebarOpen(false);
+              }}
+              className={cn(
+                "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors",
+                activeView === item.id
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-card-foreground hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{item.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* Analyze Again Button */}
+      <div className="p-4 border-t border-border">
+        <Button 
+          onClick={handleAnalyzeAgain}
+          disabled={isAnalyzing}
+          className="w-full"
+          variant={isAnalyzing ? "secondary" : "default"}
+        >
+          {isAnalyzing ? (
+            <>
+              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              <Brain className="w-4 h-4 mr-2" />
+              Analyze Again
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderMainContent = () => {
+    switch (activeView) {
+      case 'overview':
+        return (
+          <div className="space-y-6">
+            {/* Summary Cards */}
+            <SummaryCards 
+              dashboardData={dashboardData!} 
+              analysisResult={analysisResult} 
+            />
+            
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-green-600">
+                    {analysisResult?.summary.overall_score || 'N/A'}
+                  </p>
+                  <p className="text-sm text-gray-600">Overall Score</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <AlertCircle className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-orange-600">
+                    {analysisResult?.red_flags.length || 0}
+                  </p>
+                  <p className="text-sm text-gray-600">Red Flags</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <CheckCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-blue-600">
+                    {analysisResult?.recommendations.length || 0}
+                  </p>
+                  <p className="text-sm text-gray-600">Recommendations</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+
+      case 'insights':
+        return analysisResult ? (
+          <AIInsights analysisResult={analysisResult} />
+        ) : (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Brain className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">AI insights are not available</p>
+              <Button onClick={handleAnalyzeAgain} disabled={isAnalyzing}>
+                {isAnalyzing ? 'Analyzing...' : 'Generate Insights'}
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      case 'domain':
+        return (
+          <DomainSpecificInsights 
+            dashboardData={dashboardData!} 
+            analysisResult={analysisResult} 
+          />
+        );
+
+      case 'assets':
+        return <FounderAssetsVisualization dashboardData={dashboardData!} />;
+
+      default:
+        return null;
+    }
+  };
+
+  // Main dashboard render
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
-                Analysis Dashboard
-              </h1>
-              <p className="text-muted-foreground">AI-Generated Insights for Your Pitch Deck</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => handleExport("pdf")} variant="secondary">
-                <Download className="mr-2 h-4 w-4" />
-                Export PDF
-              </Button>
-              <Button onClick={() => handleExport("ppt")} className="bg-gradient-primary">
-                <Download className="mr-2 h-4 w-4" />
-                Export PPT
-              </Button>
-            </div>
+    <DashboardErrorBoundary onReset={handleRetry}>
+      <div className="flex min-h-[calc(100vh-4rem)] bg-background">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:top-16">
+          <div className="flex flex-col flex-grow bg-card border-r border-border">
+            {renderSidebarContent()}
           </div>
         </div>
 
-        {/* Executive Summary */}
-        <Card className="mb-8 bg-card border-border animate-slide-up">
-          <CardHeader>
-            <CardTitle className="text-2xl">Executive Summary</CardTitle>
-            <CardDescription>One-page investor memo</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="prose prose-invert max-w-none">
-              <p className="text-foreground/90 leading-relaxed">
-                <strong className="text-primary">TechStartup Inc.</strong> is a B2B SaaS platform addressing workflow automation 
-                for mid-market enterprises. The company demonstrates strong product-market fit with 15 design partners 
-                and $200K ARR in early traction.
-              </p>
-              <p className="text-foreground/90 leading-relaxed">
-                The founding team brings 20+ years of combined experience from Google and McKinsey. Target market 
-                shows $12B TAM with 23% CAGR. Revenue model is subscription-based with clear path to $10M ARR in 36 months.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 not-prose">
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Overall Score</div>
-                  <div className="text-3xl font-bold text-success">8.2/10</div>
+        {/* Mobile Sidebar */}
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="p-0 w-64">
+            {renderSidebarContent()}
+          </SheetContent>
+        </Sheet>
+
+        {/* Main Content */}
+        <div className="flex-1 lg:pl-64">
+          <div className="flex flex-col h-full">
+            {/* Mobile Header */}
+            <div className="lg:hidden bg-card border-b border-border px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Menu className="w-5 h-5" />
+                      </Button>
+                    </SheetTrigger>
+                  </Sheet>
+                  <h1 className="text-lg font-semibold text-card-foreground">
+                    {navigationItems.find(item => item.id === activeView)?.name}
+                  </h1>
                 </div>
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Investment Readiness</div>
-                  <div className="text-3xl font-bold text-primary">High</div>
-                </div>
-                <div className="bg-secondary p-4 rounded-lg">
-                  <div className="text-muted-foreground text-sm mb-1">Red Flags</div>
-                  <div className="text-3xl font-bold text-warning">3</div>
-                </div>
+                {analysisResult && (
+                  <Badge variant="secondary" className="capitalize">
+                    {analysisResult.performance_category.replace('_', ' ')}
+                  </Badge>
+                )}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Tabs for Detailed Analysis */}
-        <Tabs defaultValue="insights" className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="insights">Slide Insights</TabsTrigger>
-            <TabsTrigger value="redflags">Red Flags</TabsTrigger>
-            <TabsTrigger value="metrics">Key Metrics</TabsTrigger>
-          </TabsList>
+            {/* Error Banner (if AI failed but data loaded) */}
+            {error?.type === 'ai' && (
+              <div className="p-4">
+                <ErrorStates.AIAnalysisError 
+                  error={error.message} 
+                  onRetry={handleAnalyzeAgain}
+                />
+              </div>
+            )}
 
-          {/* Slide Insights */}
-          <TabsContent value="insights" className="space-y-4">
-            {insights.map((insight, index) => (
-              <Card key={index} className="bg-card border-border hover:border-primary transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                        insight.score >= 8 ? 'bg-success/20 text-success' :
-                        insight.score >= 6 ? 'bg-warning/20 text-warning' :
-                        'bg-destructive/20 text-destructive'
-                      }`}>
-                        <span className="font-bold">{insight.score}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{insight.slide}</h3>
-                        <Badge variant={insight.score >= 8 ? "default" : "secondary"} className="mt-1">
-                          {insight.score >= 8 ? 'Strong' : insight.score >= 6 ? 'Good' : 'Needs Work'}
-                        </Badge>
-                      </div>
-                    </div>
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                  </div>
-                  <p className="text-muted-foreground">{insight.feedback}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
-          {/* Red Flags */}
-          <TabsContent value="redflags" className="space-y-4">
-            {redFlags.map((flag, index) => (
-              <Card 
-                key={index} 
-                className={`bg-card border-l-4 ${
-                  flag.severity === 'high' ? 'border-l-destructive shadow-glow-warning' :
-                  flag.severity === 'medium' ? 'border-l-warning' :
-                  'border-l-muted'
-                }`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <AlertTriangle className={`h-6 w-6 mt-1 ${
-                      flag.severity === 'high' ? 'text-destructive' :
-                      flag.severity === 'medium' ? 'text-warning' :
-                      'text-muted-foreground'
-                    }`} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg">{flag.title}</h3>
-                        <Badge variant={flag.severity === 'high' ? 'destructive' : 'secondary'}>
-                          {flag.severity.toUpperCase()}
-                        </Badge>
-                      </div>
-                      <p className="text-muted-foreground">{flag.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </TabsContent>
-
-          {/* Key Metrics */}
-          <TabsContent value="metrics" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" />
-                    Team Analysis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Team Size</span>
-                      <span className="font-semibold">5 members</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Combined Experience</span>
-                      <span className="font-semibold">20+ years</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Technical Founders</span>
-                      <span className="font-semibold text-success">3/5</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    Market Opportunity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">TAM</span>
-                      <span className="font-semibold">$12B</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Market Growth</span>
-                      <span className="font-semibold text-success">23% CAGR</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Competitors Identified</span>
-                      <span className="font-semibold">8</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    Traction
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Current ARR</span>
-                      <span className="font-semibold">$200K</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Design Partners</span>
-                      <span className="font-semibold text-success">15</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">MoM Growth</span>
-                      <span className="font-semibold text-success">18%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Fundraising
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Round Size</span>
-                      <span className="font-semibold">$3M Seed</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Use of Funds</span>
-                      <span className="font-semibold">Clear</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Runway</span>
-                      <span className="font-semibold text-success">18 months</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-auto">
+              <div className="p-6">
+                {renderMainContent()}
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
-    </div>
+    </DashboardErrorBoundary>
   );
 };
 
