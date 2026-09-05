@@ -52,9 +52,13 @@ const Auth = () => {
         : await signUp(formData.email, formData.password);
 
       if (error) {
+        const isEmailNotConfirmed = error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed');
+        
         toast({
           title: 'Authentication Error',
-          description: error.message || `Failed to ${isLogin ? 'sign in' : 'sign up'}. Please try again.`,
+          description: isEmailNotConfirmed 
+            ? 'Please check your email and click the confirmation link before logging in. Check your spam folder if needed.'
+            : error.message || `Failed to ${isLogin ? 'sign in' : 'sign up'}. Please try again.`,
           variant: 'destructive',
         });
         return;
