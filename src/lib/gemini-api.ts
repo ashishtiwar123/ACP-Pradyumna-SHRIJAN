@@ -251,6 +251,56 @@ export class GeminiAnalysisService {
     };
   }
 
+  // Method to analyze an uploaded pitch deck file (PDF, image, text) using Gemini multimodal capabilities
+  async analyzePitchDeck(file: File): Promise<any> {
+    try {
+      console.log('🤖 Starting Gemini multimodal pitch deck analysis for:', file.name);
+
+      const generativePart = await fileToGenerativePart(file);
+      const prompt = createPitchDeckPrompt(file.name);
+
+      const result = await this.model.generateContent([prompt, generativePart]);
+      const response = await result.response;
+      const text = response.text();
+
+      console.log('📝 Gemini pitch deck response received');
+
+      // Extract JSON from response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in Gemini pitch deck response');
+      }
+
+      const parsedJSON = JSON.parse(jsonMatch[0]);
+      
+      // Normalize structure if necessary
+      if (parsedJSON.result) {
+        return parsedJSON;
+      } else if (parsedJSON.analysis_results) {
+        return { result: parsedJSON };
+      } else {
+        return {
+          result: {
+            analysis_results: parsedJSON,
+            analysis_logs: {
+              model_used: 'gemini-2.5-flash',
+              request_summary: `Analyzed ${file.name}`,
+              response_summary: 'Pitch deck evaluation completed',
+              startup_name: parsedJSON.startup_name || 'Startup',
+              overall_score: parsedJSON.overall_score || 75,
+              analysis_type: 'pitch_deck',
+              status: 'completed',
+              processing_time_seconds: 12
+            }
+          }
+        };
+      }
+    } catch (error) {
+      console.error('❌ Gemini pitch deck analysis failed:', error);
+      throw error;
+    }
+  }
+
   // Method to test API connectivity
   async testConnection(): Promise<boolean> {
     try {
@@ -264,4 +314,119 @@ export class GeminiAnalysisService {
   }
 }
 
-export const geminiService = new GeminiAnalysisService();
+async function fileToGenerativePart(file: File): Promise<{ inlineData: { data: string; mimeType: string } }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        const base64Data = reader.result.split(',')[1];
+        let mimeType = file.type;
+        if (!mimeType) {
+          if (file.name.endsWith('.pdf')) mimeType = 'application/pdf';
+          else if (file.name.endsWith('.png')) mimeType = 'image/png';
+          else if (file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) mimeType = 'image/jpeg';
+          else if (file.name.endsWith('.txt')) mimeType = 'text/plain';
+          else mimeType = 'application/pdf';
+        }
+        resolve({
+          inlineData: {
+            data: base64Data,
+            mimeType: mimeType
+          }
+        });
+      } else {
+        reject(new Error('Failed to read file as base64 string'));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+const createPitchDeckPrompt = (fileName: string): string => {
+  return `
+You are an expert venture capitalist and startup pitch deck analyst. Analyze the attached startup pitch deck document/file (${fileName}) thoroughly.
+
+Extract key financial, operational, product, and market details from the file, evaluate the startup, and respond strictly with a single, valid JSON object containing the exact structure below:
+
+{
+  "result": {
+    "analysis_results": {
+      "startup_name": "Name of the startup (extracted or inferred from document)",
+      "executive_summary": "Comprehensive 3-5 sentence executive summary of the startup and investment thesis.",
+      "overall_score": 82,
+      "financial_health_score": 78,
+      "growth_potential_score": 85,
+      "risk_assessment_score": 72,
+      "funding_probability_score": 75,
+      "current_revenue": 150000,
+      "monthly_burn": 20000,
+      "runway_months": 18,
+      "team_size": 8,
+      "funding_ask": 1500000,
+      "business_overview": {
+        "company": "Startup Name",
+        "industry": "fintech",
+        "stage": "seed",
+        "founded": 2024,
+        "description": "Short description of business",
+        "problem": "Problem statement",
+        "solution": "Proposed solution",
+        "business_model": "Monetization model",
+        "traction": "Key traction metrics"
+      },
+      "funding_details": {
+        "funding_ask": 1500000,
+        "use_of_funds": "Primary breakdown of funds allocation",
+        "funding_stage": "seed",
+        "runway_extension": 18,
+        "previous_funding": 250000
+      },
+      "market_analysis": {
+        "market_size_estimate": "Estimated TAM/SAM e.g. $10B",
+        "market_trends": "Key market tailwinds and trends",
+        "target_market": "Target audience and segment",
+        "competitive_edge": "Unfair advantages and differentiation"
+      },
+      "investment_recommendation": "Detailed recommendation for venture capital investors on whether to proceed, pass, or request more information.",
+      "slide_insights": {
+        "problemSolution": "Feedback on problem & solution presentation",
+        "marketSize": "Feedback on market size and opportunity",
+        "businessModel": "Feedback on unit economics and monetization"
+      },
+      "red_flags": {
+        "competition": ["Key competitive risk factors"],
+        "financial": ["Financial or burn rate risk factors"],
+        "execution": ["Execution or team risk factors"]
+      },
+      "key_metrics": {
+        "arr": 150000,
+        "mrr": 12500,
+        "growth_rate": "15% MoM",
+        "cac": 350,
+        "ltv": 2400
+      },
+      "status": "completed"
+    },
+    "analysis_logs": {
+      "model_used": "gemini-2.5-flash",
+      "request_summary": "Analyzed ${fileName}",
+      "response_summary": "Completed pitch deck evaluation",
+      "startup_name": "Startup Name",
+      "overall_score": 82,
+      "analysis_type": "pitch_deck",
+      "status": "completed",
+      "processing_time_seconds": 10
+    }
+  }
+}
+
+Guidelines:
+1. Extract exact figures whenever mentioned in the pitch deck. If a metric is missing, provide a realistic industry-standard estimate based on the startup's stage.
+2. Ensure overall_score, financial_health_score, growth_potential_score, risk_assessment_score, and funding_probability_score are numbers between 0 and 100.
+3. Be rigorous and objective. Highlight red flags clearly.
+4. Return ONLY valid JSON with no markdown syntax outside the JSON block.
+`;
+};
+
+export const geminiService = new GeminiAnalysisService();

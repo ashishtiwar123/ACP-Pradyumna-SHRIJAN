@@ -6,6 +6,7 @@ import { Upload, FileText, Loader2, Brain, CheckCircle, Clock } from "lucide-rea
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { geminiService } from "@/lib/gemini-api";
 
 // Recursive utility to convert all string numbers to numbers in any object/array
 function normalizeTypesDeep(obj: any): any {
@@ -144,23 +145,9 @@ const UploadPage = () => {
     try {
       console.log('Starting analysis process...');
 
-      // Send file directly to AI model
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('user_id', user.id);
-      formData.append('file_name', file.name);
-
-      const response = await fetch('http://127.0.0.1:8000/analyze', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Analysis failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log('Analysis completed:', result);
+      // Analyze file directly via Gemini API (Multimodal Client-side)
+      const result = await geminiService.analyzePitchDeck(file);
+      console.log('Gemini Analysis completed:', result);
 
       // Process and insert analysis results and logs
       let analysisResultId = null;
